@@ -1,0 +1,1362 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1/api-keys": {
+      "post": {
+        "operationId": "ApiKeysController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateApiKeyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Cr\u00e9er une cl\u00e9 API (valeur en clair renvoy\u00e9e une seule fois)",
+        "tags": [
+          "api-keys"
+        ]
+      },
+      "get": {
+        "operationId": "ApiKeysController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Lister les cl\u00e9s API (sans la valeur en clair)",
+        "tags": [
+          "api-keys"
+        ]
+      }
+    },
+    "/v1/api-keys/{id}": {
+      "delete": {
+        "operationId": "ApiKeysController_revoke",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "R\u00e9voquer une cl\u00e9 API",
+        "tags": [
+          "api-keys"
+        ]
+      }
+    },
+    "/v1/health": {
+      "get": {
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "V\u00e9rifier que l\u2019API r\u00e9pond (non prot\u00e9g\u00e9)",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/v1/profiles": {
+      "post": {
+        "operationId": "ProfilesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Cr\u00e9er un profil",
+        "tags": [
+          "profiles"
+        ]
+      },
+      "get": {
+        "operationId": "ProfilesController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Lister les profils",
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
+    "/v1/profiles/{id}": {
+      "get": {
+        "operationId": "ProfilesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "R\u00e9cup\u00e9rer un profil",
+        "tags": [
+          "profiles"
+        ]
+      },
+      "patch": {
+        "operationId": "ProfilesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Modifier un profil",
+        "tags": [
+          "profiles"
+        ]
+      },
+      "delete": {
+        "operationId": "ProfilesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Supprimer un profil",
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
+    "/v1/accounts/connect": {
+      "post": {
+        "operationId": "AccountsController_connect",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Connecter (ou reconnecter) un compte social",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/v1/accounts": {
+      "get": {
+        "operationId": "AccountsController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "profileId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "INSTAGRAM",
+                "WHATSAPP"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "CONNECTED",
+                "DISCONNECTED"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Lister les comptes connect\u00e9s",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/v1/accounts/{id}": {
+      "get": {
+        "operationId": "AccountsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "R\u00e9cup\u00e9rer un compte",
+        "tags": [
+          "accounts"
+        ]
+      },
+      "delete": {
+        "operationId": "AccountsController_disconnect",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "D\u00e9connecter un compte",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/v1/accounts/{id}/insights": {
+      "get": {
+        "operationId": "AccountsController_getInsights",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Statistiques Instagram du compte (instagram_business_manage_insights)",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/v1/accounts/{id}/media": {
+      "get": {
+        "operationId": "AccountsController_getMedia",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Publications r\u00e9centes Instagram",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/v1/accounts/{id}/media/{mediaId}/comments": {
+      "get": {
+        "operationId": "AccountsController_getComments",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mediaId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Commentaires sur un post Instagram (instagram_business_manage_comments)",
+        "tags": [
+          "accounts"
+        ]
+      },
+      "post": {
+        "operationId": "AccountsController_replyToComment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mediaId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "R\u00e9pondre \u00e0 un commentaire Instagram",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/v1/accounts/{id}/comments/{commentId}/reply": {
+      "post": {
+        "operationId": "AccountsController_replyToCommentId",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "commentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "R\u00e9pondre \u00e0 un commentaire Instagram (instagram_business_manage_comments)",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/v1/accounts/{id}/ig-conversations": {
+      "get": {
+        "operationId": "AccountsController_getIgConversations",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Conversations Instagram brutes (IGSIDs des participants)",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/v1/accounts/{id}/messages/send": {
+      "post": {
+        "operationId": "AccountsController_sendDirectMessage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Envoyer un DM Instagram directement (sans conversation DB)",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/v1/accounts/{id}/whatsapp-info": {
+      "get": {
+        "operationId": "AccountsController_getWhatsAppInfo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Infos compte WhatsApp Business (whatsapp_business_management)",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/v1/connect/{platform}": {
+      "get": {
+        "operationId": "ConnectController_getUrl",
+        "parameters": [
+          {
+            "name": "platform",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "profileId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Obtenir l\u2019URL d\u2019autorisation OAuth pour connecter un compte",
+        "tags": [
+          "connect"
+        ]
+      }
+    },
+    "/v1/connect/{platform}/callback": {
+      "get": {
+        "operationId": "ConnectController_callback",
+        "parameters": [
+          {
+            "name": "platform",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "error",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "error_description",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Callback OAuth appel\u00e9 par Meta apr\u00e8s autorisation",
+        "tags": [
+          "connect"
+        ]
+      }
+    },
+    "/v1/connect/instagram/{accountId}/subscribe-webhooks": {
+      "post": {
+        "operationId": "ConnectController_subscribeWebhooks",
+        "parameters": [
+          {
+            "name": "accountId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Abonner un compte IG aux webhooks (subscribed_apps)",
+        "tags": [
+          "connect"
+        ]
+      }
+    },
+    "/v1/connect/whatsapp/from-env": {
+      "post": {
+        "operationId": "ConnectController_connectWhatsAppFromEnv",
+        "parameters": [
+          {
+            "name": "profileId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Connecter WhatsApp depuis les variables d'env",
+        "tags": [
+          "connect"
+        ]
+      }
+    },
+    "/v1/posts": {
+      "post": {
+        "operationId": "PostsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePostDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Cr\u00e9er un post (brouillon, programm\u00e9 ou publi\u00e9)",
+        "tags": [
+          "posts"
+        ]
+      },
+      "get": {
+        "operationId": "PostsController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "profileId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "DRAFT",
+                "SCHEDULED",
+                "PUBLISHED",
+                "FAILED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "INSTAGRAM",
+                "WHATSAPP"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Recherche dans le contenu",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Lister les posts",
+        "tags": [
+          "posts"
+        ]
+      }
+    },
+    "/v1/posts/{id}": {
+      "get": {
+        "operationId": "PostsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "R\u00e9cup\u00e9rer un post",
+        "tags": [
+          "posts"
+        ]
+      }
+    },
+    "/v1/conversations": {
+      "post": {
+        "operationId": "MessagesController_createConversation",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConversationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "D\u00e9marrer (ou retrouver) une conversation",
+        "tags": [
+          "messages"
+        ]
+      },
+      "get": {
+        "operationId": "MessagesController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "INSTAGRAM",
+                "WHATSAPP"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Lister les conversations",
+        "tags": [
+          "messages"
+        ]
+      }
+    },
+    "/v1/conversations/{id}": {
+      "get": {
+        "operationId": "MessagesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "R\u00e9cup\u00e9rer une conversation",
+        "tags": [
+          "messages"
+        ]
+      }
+    },
+    "/v1/conversations/{id}/messages": {
+      "get": {
+        "operationId": "MessagesController_getMessages",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Lister les messages d\u2019une conversation",
+        "tags": [
+          "messages"
+        ]
+      },
+      "post": {
+        "operationId": "MessagesController_sendMessage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Envoyer un message dans une conversation",
+        "tags": [
+          "messages"
+        ]
+      }
+    },
+    "/v1/media/upload": {
+      "post": {
+        "operationId": "MediaController_upload",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "tags": [
+          "media"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "orsay-api",
+    "description": "API unifi\u00e9e r\u00e9seaux sociaux \u2014 Instagram & WhatsApp",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [
+    {
+      "url": "https://api.plugkit.co",
+      "description": "Production"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "api-key": {
+        "scheme": "bearer",
+        "bearerFormat": "sk_...",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "CreateApiKeyDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "production-server"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "CreateProfileDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "My Brand"
+          },
+          "color": {
+            "type": "string",
+            "example": "#6366f1"
+          },
+          "description": {
+            "type": "string"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateProfileDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "My Brand"
+          },
+          "color": {
+            "type": "string",
+            "example": "#6366f1"
+          },
+          "description": {
+            "type": "string"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "ConnectAccountDto": {
+        "type": "object",
+        "properties": {
+          "platform": {
+            "type": "string",
+            "enum": [
+              "INSTAGRAM",
+              "WHATSAPP"
+            ]
+          },
+          "profileId": {
+            "type": "string",
+            "description": "Profil auquel rattacher le compte"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "ID du compte c\u00f4t\u00e9 plateforme (IG business account id / WA phone number id)"
+          },
+          "username": {
+            "type": "string",
+            "example": "@acme"
+          },
+          "displayName": {
+            "type": "string",
+            "example": "Acme"
+          },
+          "accessToken": {
+            "type": "string",
+            "description": "Token plateforme (long IG / syst\u00e8me WA)"
+          },
+          "metadata": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "platform",
+          "profileId",
+          "externalId",
+          "username"
+        ]
+      },
+      "CreatePostDto": {
+        "type": "object",
+        "properties": {
+          "profileId": {
+            "type": "string",
+            "description": "Profil propri\u00e9taire du post"
+          },
+          "content": {
+            "type": "string",
+            "description": "Texte / l\u00e9gende du post"
+          },
+          "accountIds": {
+            "description": "IDs des comptes cibles (Account.id)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "mediaUrls": {
+            "description": "URLs des m\u00e9dias",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "scheduledFor": {
+            "type": "string",
+            "description": "Date de programmation (ISO 8601)"
+          },
+          "publishNow": {
+            "type": "boolean",
+            "default": false,
+            "description": "Publier imm\u00e9diatement"
+          }
+        },
+        "required": [
+          "profileId",
+          "content",
+          "accountIds"
+        ]
+      },
+      "CreateConversationDto": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Compte (Account.id) propri\u00e9taire de la conversation"
+          },
+          "contactHandle": {
+            "type": "string",
+            "description": "Identifiant du contact c\u00f4t\u00e9 plateforme (PSID IG / wa_id WhatsApp)"
+          },
+          "contactName": {
+            "type": "string"
+          },
+          "externalConversationId": {
+            "type": "string",
+            "description": "ID de conversation c\u00f4t\u00e9 plateforme (sinon = contactHandle)"
+          }
+        },
+        "required": [
+          "accountId",
+          "contactHandle"
+        ]
+      },
+      "SendMessageDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Contenu texte du message"
+          }
+        },
+        "required": [
+          "text"
+        ]
+      }
+    }
+  }
+}

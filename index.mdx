@@ -1,20 +1,51 @@
 ---
-title: "Introduction"
-description: "Welcome to your project"
+title: "PlugKit"
+description: "One API to publish, read, and reply across every social platform — built for developers and AI agents."
 ---
 
-Write a short description of your product here. What it does, who it's for, and what they can accomplish with it.
+PlugKit is a single REST API that connects social and messaging accounts through
+**official platform APIs** and lets you act on them — publish content, read and
+send messages, manage comments — without integrating each platform yourself.
 
-<Tip>
-  Ready to make this your own? Start by editing this page. Update your `docs.json` file to customize your site. Then fill out the [Quickstart](/quickstart) page.
-</Tip>
+Today it supports **Instagram** and **WhatsApp** via Meta's official APIs, with
+more platforms on the way.
 
-<Card title="Quickstart" icon="rocket" href="/quickstart">
-  This card links to the quickstart page in your project.
-</Card>
-<Card title="Components" icon="puzzle-piece" href="https://mintlify.com/docs/components">
-  Add cards, callouts, steps, tabs, and more to design and structure your pages.
-</Card>
-<Card title="Settings" icon="gear" href="https://mintlify.com/docs/organize/settings">
-  Set your site name, branding, and navigation in the `docs.json` file.
-</Card>
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get an API key and make your first call in under five minutes.
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    How API keys work and how to send them.
+  </Card>
+  <Card title="Connect Instagram" icon="instagram" href="/guides/connect-instagram">
+    Run the OAuth flow and link a business account.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference">
+    Every endpoint, with a live playground to try them.
+  </Card>
+</CardGroup>
+
+## How it works
+
+<Steps>
+  <Step title="Create a profile">
+    A profile groups the accounts you connect (think of it as a workspace).
+  </Step>
+  <Step title="Connect an account">
+    Send your user through the platform's official OAuth flow. PlugKit stores the
+    token and exposes the account.
+  </Step>
+  <Step title="Act through one API">
+    Publish posts, read and reply to messages, manage comments — the same shape
+    of request whatever the platform.
+  </Step>
+</Steps>
+
+## Base URL
+
+```
+https://api.plugkit.co/v1
+```
+
+Every request is authenticated with a Bearer API key — see
+[Authentication](/authentication).

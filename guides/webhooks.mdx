@@ -1,0 +1,39 @@
+---
+title: "Webhooks"
+description: "Receive messages and comments in real time."
+---
+
+PlugKit receives platform events (new messages, comments) at a single webhook
+endpoint and processes them for the matching connected account.
+
+## Endpoint
+
+```
+https://api.plugkit.co/v1/webhooks/instagram
+```
+
+- **Verification** — Meta sends a `GET` with `hub.challenge`; PlugKit validates
+  the verify token and echoes the challenge.
+- **Events** — Meta sends `POST` requests with the event payload, which PlugKit
+  routes to the right account and conversation.
+
+## Configure in the Meta App Dashboard
+
+<Steps>
+  <Step title="Set the callback URL">
+    In your Meta app → Instagram → Webhooks, set the callback URL to
+    `https://api.plugkit.co/v1/webhooks/instagram` and enter your verify token.
+  </Step>
+  <Step title="Verify">
+    Click **Verify and save**. Meta calls the endpoint and PlugKit responds to
+    the challenge automatically.
+  </Step>
+  <Step title="Subscribe to fields">
+    Subscribe to the fields you need (e.g. `messages`, `comments`).
+  </Step>
+</Steps>
+
+<Note>
+  Each connected account is subscribed to your app's webhooks automatically when
+  it completes the [connect flow](/guides/connect-instagram).
+</Note>

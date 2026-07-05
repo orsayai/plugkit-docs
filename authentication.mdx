@@ -1,0 +1,46 @@
+---
+title: "Authentication"
+description: "How PlugKit API keys work."
+---
+
+PlugKit uses **API keys** sent as a Bearer token. Every request (except
+`/v1/health`) must include:
+
+```
+Authorization: Bearer sk_your_key
+```
+
+## Key format
+
+Keys are `sk_` followed by 64 hex characters. They are **hashed** server-side —
+PlugKit only ever shows the full key **once**, at creation. Store it in a secret
+manager, never in client-side code.
+
+## Managing keys
+
+<CardGroup cols={2}>
+  <Card title="Create a key" icon="plus">
+    `POST /v1/api-keys` — returns the plaintext key one time.
+  </Card>
+  <Card title="List keys" icon="list">
+    `GET /v1/api-keys` — shows prefixes and metadata, never the secret.
+  </Card>
+  <Card title="Revoke a key" icon="trash">
+    `DELETE /v1/api-keys/{id}` — immediately invalidates it.
+  </Card>
+  <Card title="Rotate" icon="rotate">
+    Create a new key, switch your app over, then revoke the old one.
+  </Card>
+</CardGroup>
+
+<Warning>
+  A leaked key can act on every connected account in your profile. Revoke and
+  rotate immediately if one is exposed.
+</Warning>
+
+## Errors
+
+| Status | Meaning |
+| ------ | ------- |
+| `401 Unauthorized` | Missing, malformed, or revoked key. |
+| `403 Forbidden` | Key is valid but not allowed for this resource. |

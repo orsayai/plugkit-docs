@@ -1,0 +1,52 @@
+---
+title: "Connect Instagram"
+description: "Link an Instagram business account with the official OAuth flow."
+---
+
+PlugKit uses **Instagram API with Instagram Login**. Connecting an account is a
+standard OAuth 2 flow: you get an authorization URL, the user approves, and
+Instagram redirects back to PlugKit, which stores a long-lived token.
+
+<Steps>
+  <Step title="Request the authorization URL">
+    ```bash
+    curl "https://api.plugkit.co/v1/connect/instagram?profileId=YOUR_PROFILE_ID" \
+      -H "Authorization: Bearer sk_your_key"
+    ```
+    Response:
+    ```json
+    { "authUrl": "https://www.instagram.com/oauth/authorize?client_id=..." }
+    ```
+  </Step>
+  <Step title="Send the user to authUrl">
+    Open it in a browser (or a popup). The user logs into their Instagram
+    **business** account and approves the requested permissions.
+  </Step>
+  <Step title="Instagram redirects back">
+    Instagram calls `https://api.plugkit.co/v1/connect/instagram/callback` with a
+    `code`. PlugKit exchanges it for a long-lived token, fetches the profile, and
+    creates the account — no extra work on your side.
+  </Step>
+  <Step title="Confirm the account">
+    ```bash
+    curl https://api.plugkit.co/v1/accounts \
+      -H "Authorization: Bearer sk_your_key"
+    ```
+    The connected account now appears in the list.
+  </Step>
+</Steps>
+
+## Requested permissions
+
+| Scope | What it enables |
+| ----- | --------------- |
+| `instagram_business_basic` | Read the account profile and basic info. |
+| `instagram_business_content_publish` | Publish posts. |
+| `instagram_business_manage_messages` | Read and send DMs. |
+| `instagram_business_manage_comments` | Read, reply to, and hide comments. |
+| `instagram_business_manage_insights` | Read account and media insights. |
+
+<Note>
+  While your Meta app is in development, only accounts added as **Instagram
+  Testers** in the Meta App Dashboard can complete this flow.
+</Note>

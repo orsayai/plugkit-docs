@@ -1,0 +1,42 @@
+---
+title: "Publishing"
+description: "Publish content to connected accounts."
+---
+
+Create a post and PlugKit publishes it to the connected account(s) in the
+profile.
+
+```bash
+curl -X POST https://api.plugkit.co/v1/posts \
+  -H "Authorization: Bearer sk_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "profileId": "YOUR_PROFILE_ID",
+    "content": "Launch day 🚀",
+    "mediaUrls": ["https://example.com/photo.jpg"]
+  }'
+```
+
+The response includes a per-account result with the live `platformPostUrl` once
+publishing succeeds.
+
+<Note>
+  Instagram publishing is a two-step process (create media container, then
+  publish). PlugKit handles both steps for you.
+</Note>
+
+## Uploading media
+
+If you don't have a public image URL, upload the file first:
+
+```bash
+curl -X POST https://api.plugkit.co/v1/media/upload \
+  -H "Authorization: Bearer sk_your_key" \
+  -F "file=@./photo.jpg"
+```
+
+It returns a public URL you can pass in `mediaUrls`.
+
+<Card title="See all fields" icon="code" href="/api-reference">
+  Open `POST /v1/posts` in the API Reference to try it live.
+</Card>

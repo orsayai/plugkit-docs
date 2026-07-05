@@ -1,0 +1,36 @@
+---
+title: "Messaging"
+description: "Read conversations and send replies."
+---
+
+PlugKit exposes a connected account's inbox as **conversations** and
+**messages**.
+
+## List conversations
+
+```bash
+curl "https://api.plugkit.co/v1/conversations?accountId=ACCOUNT_ID" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+## Read a conversation
+
+```bash
+curl https://api.plugkit.co/v1/conversations/CONVERSATION_ID/messages \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+## Send a reply
+
+```bash
+curl -X POST https://api.plugkit.co/v1/conversations/CONVERSATION_ID/messages \
+  -H "Authorization: Bearer sk_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{ "text": "Thanks for reaching out! 👋" }'
+```
+
+<Note>
+  New inbound messages are delivered in real time via webhooks — see
+  [Webhooks](/guides/webhooks). Reading and sending require the
+  `instagram_business_manage_messages` permission.
+</Note>
