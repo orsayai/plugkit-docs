@@ -1,0 +1,80 @@
+---
+title: "Analytics"
+description: "Pull account and post metrics for Instagram and X."
+---
+
+PlugKit exposes read-only metrics for the platforms that support them.
+
+## Instagram insights
+
+Account-level insights (followers, reach, impressions, profile views) plus
+public profile info:
+
+```bash
+curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/insights \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+```json Response (shape)
+{
+  "profile": { "followers_count": 1234, "media_count": 87, "biography": "…" },
+  "metrics": [
+    { "name": "impressions", "values": [{ "value": 4200 }] },
+    { "name": "reach", "values": [{ "value": 3100 }] }
+  ]
+}
+```
+
+Requires the `instagram_business_manage_insights` permission on the connected
+account.
+
+## X (Twitter) account analytics
+
+The six account metrics the X API exposes (followers, following, tweets, lists,
+likes given, media):
+
+```bash
+curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/x-analytics \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+## X tweet analytics
+
+Per-tweet metrics (likes, retweets, replies, quotes, impressions, bookmarks).
+The tweet id is the number at the end of the tweet URL, or the `platformPostId`
+returned when you published it:
+
+```bash
+curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/x-tweets/TWEET_ID \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+<Note>
+  Detailed impression/engagement data on X lives at the **tweet** level, not the
+  account level — that's an X API limitation, not PlugKit's.
+</Note>
+
+## Instagram media & comments
+
+List recent posts, then read or reply to their comments:
+
+```bash List recent media
+curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/media \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+```bash Comments on a post
+curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/media/MEDIA_ID/comments \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+```bash Reply to a comment
+curl -X POST https://api.plugkit.co/v1/accounts/ACCOUNT_ID/comments/COMMENT_ID/reply \
+  -H "Authorization: Bearer sk_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{ "message": "Thanks! 🙏" }'
+```
+
+<Card title="Try it live" icon="code" href="/api-reference">
+  Every analytics endpoint is in the API Reference playground.
+</Card>

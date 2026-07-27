@@ -5,20 +5,34 @@ description: "One API to publish, read, and reply across every social platform �
 
 PlugKit is a single REST API that connects social and messaging accounts through
 **official platform APIs** and lets you act on them — publish content, read and
-send messages, manage comments — without integrating each platform yourself.
+send messages, manage comments, pull analytics — without integrating each
+platform yourself. Same request shape everywhere, no per-API quirks.
 
-Today it supports **Instagram** and **WhatsApp** via Meta's official APIs, with
-more platforms on the way.
+## Supported platforms
+
+| Platform | Publish | Messaging | Comments | Analytics | How you connect |
+| --- | :---: | :---: | :---: | :---: | --- |
+| **Instagram** | ✅ | ✅ | ✅ | ✅ | OAuth (Meta) |
+| **WhatsApp** | — | ✅ | — | — | Cloud API credentials |
+| **TikTok** | ✅ | — | — | — | OAuth (Login Kit) |
+| **YouTube** | ✅ | — | — | — | OAuth (Google) |
+| **X (Twitter)** | ✅ | — | — | ✅ | OAuth 2.0 (PKCE) |
+| **Telegram** | ✅ | ✅ | — | — | Bot token (@BotFather) |
+
+<Note>
+  TikTok publishes as `SELF_ONLY` and YouTube as `private` until each app passes
+  its platform review — this is a platform rule, not a PlugKit limit.
+</Note>
 
 <CardGroup cols={2}>
   <Card title="Quickstart" icon="rocket" href="/quickstart">
-    Get an API key and make your first call in under five minutes.
+    Create an account, get an API key, and make your first call in five minutes.
   </Card>
   <Card title="Authentication" icon="key" href="/authentication">
-    How API keys work and how to send them.
+    How the dashboard session and API keys work.
   </Card>
-  <Card title="Connect Instagram" icon="instagram" href="/guides/connect-instagram">
-    Run the OAuth flow and link a business account.
+  <Card title="Connect accounts" icon="link" href="/guides/connecting-accounts">
+    OAuth and token flows for all six platforms.
   </Card>
   <Card title="API Reference" icon="code" href="/api-reference">
     Every endpoint, with a live playground to try them.
@@ -28,16 +42,20 @@ more platforms on the way.
 ## How it works
 
 <Steps>
+  <Step title="Sign in and create a key">
+    Sign in to the [dashboard](https://plugkit.co/dashboard) with Google, GitHub,
+    or email, then create an API key. Everything you do is scoped to your account.
+  </Step>
   <Step title="Create a profile">
-    A profile groups the accounts you connect (think of it as a workspace).
+    A profile groups the accounts you connect (think of it as a workspace / brand).
   </Step>
   <Step title="Connect an account">
-    Send your user through the platform's official OAuth flow. PlugKit stores the
-    token and exposes the account.
+    Send your user through the platform's official OAuth flow (or paste a token
+    for Telegram/WhatsApp). PlugKit stores the token and exposes the account.
   </Step>
   <Step title="Act through one API">
-    Publish posts, read and reply to messages, manage comments — the same shape
-    of request whatever the platform.
+    Publish posts, read and reply to messages, manage comments, pull metrics —
+    the same shape of request whatever the platform.
   </Step>
 </Steps>
 

@@ -25,9 +25,11 @@
           {
             "group": "Guides",
             "pages": [
+              "guides/connecting-accounts",
               "guides/connect-instagram",
               "guides/publishing",
               "guides/messaging",
+              "guides/analytics",
               "guides/webhooks"
             ]
           }
@@ -41,12 +43,12 @@
   },
   "navbar": {
     "links": [
-      { "label": "Test console", "href": "https://api.plugkit.co/dashboard.html" }
+      { "label": "Dashboard", "href": "https://plugkit.co/dashboard" }
     ],
     "primary": {
       "type": "button",
       "label": "Get started",
-      "href": "https://api.plugkit.co/dashboard.html"
+      "href": "https://plugkit.co/dashboard"
     }
   },
   "footer": {

@@ -1,10 +1,10 @@
 ---
 title: "Publishing"
-description: "Publish content to connected accounts."
+description: "Publish content to one or more connected accounts."
 ---
 
-Create a post and PlugKit publishes it to the connected account(s) in the
-profile.
+Create a post targeting one or more accounts and PlugKit publishes to each,
+returning a per-target result.
 
 ```bash
 curl -X POST https://api.plugkit.co/v1/posts \
@@ -13,21 +13,46 @@ curl -X POST https://api.plugkit.co/v1/posts \
   -d '{
     "profileId": "YOUR_PROFILE_ID",
     "content": "Launch day 🚀",
-    "mediaUrls": ["https://example.com/photo.jpg"]
+    "accountIds": ["ACCOUNT_ID_1", "ACCOUNT_ID_2"],
+    "mediaUrls": ["https://example.com/photo.jpg"],
+    "publishNow": true
   }'
 ```
 
-The response includes a per-account result with the live `platformPostUrl` once
-publishing succeeds.
+## Fields
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `profileId` | ✅ | The profile that owns the target accounts. |
+| `content` | ✅ | Caption / text body. |
+| `accountIds` | ✅ | One or more connected accounts to publish to. |
+| `mediaUrls` | conditional | Public URL(s). Required for video platforms (see below). |
+| `publishNow` | — | `true` to publish immediately. |
+| `scheduledFor` | — | ISO date to schedule instead of publishing now. |
+| `asDraft` | — | TikTok only — lands the video in drafts to finalize in the app. |
+
+The response includes a per-account `target` with its `status` and the live
+`platformPostUrl` once publishing succeeds.
+
+## What each platform expects
+
+| Platform | Media | Notes |
+| --- | --- | --- |
+| **Instagram** | image URL | Two-step (container → publish), handled for you. |
+| **TikTok** | public `.mp4` URL | Posts `SELF_ONLY` until review; `asDraft` supported. |
+| **YouTube** | public video URL | Uploads as `private` until the app is verified. |
+| **Telegram** | video URL | Bot must be an admin of the target channel. |
+| **X (Twitter)** | optional | Text only, **or** 1–4 images, **or** one video/GIF. |
 
 <Note>
-  Instagram publishing is a two-step process (create media container, then
-  publish). PlugKit handles both steps for you.
+  Instagram publishing is a two-step process (create a media container, then
+  publish). PlugKit runs both steps for you.
 </Note>
 
 ## Uploading media
 
-If you don't have a public image URL, upload the file first:
+If you don't have a public URL, upload the file first and pass the returned URL
+in `mediaUrls`:
 
 ```bash
 curl -X POST https://api.plugkit.co/v1/media/upload \
@@ -35,7 +60,13 @@ curl -X POST https://api.plugkit.co/v1/media/upload \
   -F "file=@./photo.jpg"
 ```
 
-It returns a public URL you can pass in `mediaUrls`.
+## Scheduling
+
+Pass `scheduledFor` (ISO 8601) instead of `publishNow` to queue a post:
+
+```json
+{ "profileId": "...", "content": "...", "accountIds": ["..."], "scheduledFor": "2026-01-01T09:00:00Z" }
+```
 
 <Card title="See all fields" icon="code" href="/api-reference">
   Open `POST /v1/posts` in the API Reference to try it live.

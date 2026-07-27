@@ -1,0 +1,102 @@
+---
+title: "Connecting accounts"
+description: "Link Instagram, WhatsApp, TikTok, YouTube, X and Telegram to a profile."
+---
+
+Accounts always live inside a **profile**. Create one first, then connect
+accounts to it — from the dashboard's **Connections** page in two clicks, or via
+the API as shown below.
+
+```bash Create a profile
+curl -X POST https://api.plugkit.co/v1/profiles \
+  -H "Authorization: Bearer sk_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "My brand" }'
+```
+
+There are three connection patterns depending on the platform:
+
+| Pattern | Platforms | How |
+| --- | --- | --- |
+| **OAuth redirect** | Instagram, TikTok, YouTube, X | `GET /connect/{platform}` → open `authUrl` |
+| **Bot token** | Telegram | `POST /connect/telegram` with the token |
+| **Cloud credentials** | WhatsApp | `POST /connect/whatsapp/from-env` |
+
+---
+
+## OAuth platforms (Instagram, TikTok, YouTube, X)
+
+<Steps>
+  <Step title="Request the authorization URL">
+    ```bash
+    curl "https://api.plugkit.co/v1/connect/instagram?profileId=YOUR_PROFILE_ID" \
+      -H "Authorization: Bearer sk_your_key"
+    ```
+    Swap `instagram` for `tiktok`, `youtube`, or `x`. Response:
+    ```json
+    { "authUrl": "https://www.instagram.com/oauth/authorize?client_id=..." }
+    ```
+  </Step>
+  <Step title="Send the user to authUrl">
+    Open it in a browser (or a popup). The user approves the requested
+    permissions on the platform's own consent screen.
+  </Step>
+  <Step title="PlugKit stores the account">
+    The platform redirects back to `/connect/{platform}/callback`, PlugKit
+    exchanges the code for a long-lived token, and the account appears in
+    `GET /accounts`. The callback page posts a `pk_oauth` message and closes, so
+    a popup flow can refresh automatically.
+  </Step>
+</Steps>
+
+<Note>
+  **Review status.** Until each platform app passes review, publishing is
+  restricted by the platform: TikTok posts as `SELF_ONLY`, YouTube as `private`.
+  Instagram and X require a business/authorized account.
+</Note>
+
+---
+
+## Telegram (bot token)
+
+No OAuth. Create a bot with [@BotFather](https://t.me/BotFather), then:
+
+```bash
+curl -X POST https://api.plugkit.co/v1/connect/telegram \
+  -H "Authorization: Bearer sk_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{ "profileId": "YOUR_PROFILE_ID", "botToken": "123456:AA..." }'
+```
+
+PlugKit validates the token (`getMe`) and connects the bot. To publish to a
+channel, add the bot as an **admin** of the channel.
+
+---
+
+## WhatsApp (Cloud API)
+
+WhatsApp connects from server-side credentials (phone number id, WABA id, and a
+token) configured on your PlugKit deployment:
+
+```bash
+curl -X POST "https://api.plugkit.co/v1/connect/whatsapp/from-env?profileId=YOUR_PROFILE_ID" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+---
+
+## Manage connected accounts
+
+```bash List accounts
+curl "https://api.plugkit.co/v1/accounts?status=CONNECTED" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+```bash Disconnect
+curl -X DELETE https://api.plugkit.co/v1/accounts/ACCOUNT_ID \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+Each account carries its `platform`, `username`, `status`, and the `profileId`
+it belongs to. Next: [Publishing](/guides/publishing) ·
+[Messaging](/guides/messaging) · [Analytics](/guides/analytics).

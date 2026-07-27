@@ -1,10 +1,23 @@
 ---
 title: "Messaging"
-description: "Read conversations and send replies."
+description: "Read conversations and send replies (Instagram, WhatsApp, Telegram)."
 ---
 
 PlugKit exposes a connected account's inbox as **conversations** and
-**messages**.
+**messages**, the same shape across Instagram, WhatsApp and Telegram.
+
+## Sync from the platform
+
+Inbound messages arrive via webhooks, but you can also pull the current state
+from the platform's live API — handy on first connection or if you don't run
+webhooks:
+
+```bash
+curl -X POST "https://api.plugkit.co/v1/conversations/sync?accountId=ACCOUNT_ID" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+Returns how many conversations and messages were synced.
 
 ## List conversations
 
@@ -29,8 +42,20 @@ curl -X POST https://api.plugkit.co/v1/conversations/CONVERSATION_ID/messages \
   -d '{ "text": "Thanks for reaching out! 👋" }'
 ```
 
+## Send a direct DM (Instagram, no existing conversation)
+
+Message an Instagram user by their IGSID without an existing thread:
+
+```bash
+curl -X POST https://api.plugkit.co/v1/accounts/ACCOUNT_ID/messages/send \
+  -H "Authorization: Bearer sk_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{ "recipientId": "178414...", "text": "Hi there!" }'
+```
+
 <Note>
   New inbound messages are delivered in real time via webhooks — see
-  [Webhooks](/guides/webhooks). Reading and sending require the
-  `instagram_business_manage_messages` permission.
+  [Webhooks](/guides/webhooks). Instagram messaging requires the
+  `instagram_business_manage_messages` permission, and (per Meta's rule) the user
+  must have messaged you within the last 24h unless you use an approved template.
 </Note>

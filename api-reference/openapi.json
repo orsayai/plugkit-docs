@@ -25,7 +25,7 @@
             "api-key": []
           }
         ],
-        "summary": "Cr\u00e9er une cl\u00e9 API (valeur en clair renvoy\u00e9e une seule fois)",
+        "summary": "Créer une clé API (valeur en clair renvoyée une seule fois)",
         "tags": [
           "api-keys"
         ]
@@ -43,7 +43,7 @@
             "api-key": []
           }
         ],
-        "summary": "Lister les cl\u00e9s API (sans la valeur en clair)",
+        "summary": "Lister les clés API (sans la valeur en clair)",
         "tags": [
           "api-keys"
         ]
@@ -72,7 +72,7 @@
             "api-key": []
           }
         ],
-        "summary": "R\u00e9voquer une cl\u00e9 API",
+        "summary": "Révoquer une clé API",
         "tags": [
           "api-keys"
         ]
@@ -87,7 +87,7 @@
             "description": ""
           }
         },
-        "summary": "V\u00e9rifier que l\u2019API r\u00e9pond (non prot\u00e9g\u00e9)",
+        "summary": "Vérifier que l’API répond (non protégé)",
         "tags": [
           "health"
         ]
@@ -117,7 +117,7 @@
             "api-key": []
           }
         ],
-        "summary": "Cr\u00e9er un profil",
+        "summary": "Créer un profil",
         "tags": [
           "profiles"
         ]
@@ -164,7 +164,7 @@
             "api-key": []
           }
         ],
-        "summary": "R\u00e9cup\u00e9rer un profil",
+        "summary": "Récupérer un profil",
         "tags": [
           "profiles"
         ]
@@ -304,7 +304,11 @@
             "schema": {
               "enum": [
                 "INSTAGRAM",
-                "WHATSAPP"
+                "WHATSAPP",
+                "TIKTOK",
+                "TELEGRAM",
+                "YOUTUBE",
+                "X"
               ],
               "type": "string"
             }
@@ -332,7 +336,7 @@
             "api-key": []
           }
         ],
-        "summary": "Lister les comptes connect\u00e9s",
+        "summary": "Lister les comptes connectés",
         "tags": [
           "accounts"
         ]
@@ -361,7 +365,7 @@
             "api-key": []
           }
         ],
-        "summary": "R\u00e9cup\u00e9rer un compte",
+        "summary": "Récupérer un compte",
         "tags": [
           "accounts"
         ]
@@ -388,7 +392,7 @@
             "api-key": []
           }
         ],
-        "summary": "D\u00e9connecter un compte",
+        "summary": "Déconnecter un compte",
         "tags": [
           "accounts"
         ]
@@ -423,6 +427,72 @@
         ]
       }
     },
+    "/v1/accounts/{id}/x-analytics": {
+      "get": {
+        "operationId": "AccountsController_getXAnalytics",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Analytics du compte X (followers, following, nb de tweets)",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/v1/accounts/{id}/x-tweets/{tweetId}": {
+      "get": {
+        "operationId": "AccountsController_getXTweetAnalytics",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tweetId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Analytics d'un tweet (likes, RT, réponses, impressions)",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
     "/v1/accounts/{id}/media": {
       "get": {
         "operationId": "AccountsController_getMedia",
@@ -446,7 +516,7 @@
             "api-key": []
           }
         ],
-        "summary": "Publications r\u00e9centes Instagram",
+        "summary": "Publications récentes Instagram",
         "tags": [
           "accounts"
         ]
@@ -518,7 +588,7 @@
             "api-key": []
           }
         ],
-        "summary": "R\u00e9pondre \u00e0 un commentaire Instagram",
+        "summary": "Répondre à un commentaire Instagram",
         "tags": [
           "accounts"
         ]
@@ -555,7 +625,7 @@
             "api-key": []
           }
         ],
-        "summary": "R\u00e9pondre \u00e0 un commentaire Instagram (instagram_business_manage_comments)",
+        "summary": "Répondre à un commentaire Instagram (instagram_business_manage_comments)",
         "tags": [
           "accounts"
         ]
@@ -679,7 +749,7 @@
             "api-key": []
           }
         ],
-        "summary": "Obtenir l\u2019URL d\u2019autorisation OAuth pour connecter un compte",
+        "summary": "Obtenir l’URL d’autorisation OAuth pour connecter un compte",
         "tags": [
           "connect"
         ]
@@ -735,7 +805,7 @@
             "description": ""
           }
         },
-        "summary": "Callback OAuth appel\u00e9 par Meta apr\u00e8s autorisation",
+        "summary": "Callback OAuth appelé par Meta/TikTok après autorisation",
         "tags": [
           "connect"
         ]
@@ -799,6 +869,26 @@
         ]
       }
     },
+    "/v1/connect/telegram": {
+      "post": {
+        "operationId": "ConnectController_connectTelegram",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Connecter un bot Telegram avec son token (@BotFather)",
+        "tags": [
+          "connect"
+        ]
+      }
+    },
     "/v1/posts": {
       "post": {
         "operationId": "PostsController_create",
@@ -823,7 +913,7 @@
             "api-key": []
           }
         ],
-        "summary": "Cr\u00e9er un post (brouillon, programm\u00e9 ou publi\u00e9)",
+        "summary": "Créer un post (brouillon, programmé ou publié)",
         "tags": [
           "posts"
         ]
@@ -881,7 +971,11 @@
             "schema": {
               "enum": [
                 "INSTAGRAM",
-                "WHATSAPP"
+                "WHATSAPP",
+                "TIKTOK",
+                "TELEGRAM",
+                "YOUTUBE",
+                "X"
               ],
               "type": "string"
             }
@@ -935,7 +1029,7 @@
             "api-key": []
           }
         ],
-        "summary": "R\u00e9cup\u00e9rer un post",
+        "summary": "Récupérer un post",
         "tags": [
           "posts"
         ]
@@ -965,7 +1059,7 @@
             "api-key": []
           }
         ],
-        "summary": "D\u00e9marrer (ou retrouver) une conversation",
+        "summary": "Démarrer (ou retrouver) une conversation",
         "tags": [
           "messages"
         ]
@@ -1001,7 +1095,11 @@
             "schema": {
               "enum": [
                 "INSTAGRAM",
-                "WHATSAPP"
+                "WHATSAPP",
+                "TIKTOK",
+                "TELEGRAM",
+                "YOUTUBE",
+                "X"
               ],
               "type": "string"
             }
@@ -1031,6 +1129,35 @@
         ]
       }
     },
+    "/v1/conversations/sync": {
+      "post": {
+        "operationId": "MessagesController_sync",
+        "parameters": [
+          {
+            "name": "accountId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Synchroniser les conversations depuis la plateforme (API live)",
+        "tags": [
+          "messages"
+        ]
+      }
+    },
     "/v1/conversations/{id}": {
       "get": {
         "operationId": "MessagesController_findOne",
@@ -1054,7 +1181,7 @@
             "api-key": []
           }
         ],
-        "summary": "R\u00e9cup\u00e9rer une conversation",
+        "summary": "Récupérer une conversation",
         "tags": [
           "messages"
         ]
@@ -1083,7 +1210,7 @@
             "api-key": []
           }
         ],
-        "summary": "Lister les messages d\u2019une conversation",
+        "summary": "Lister les messages d’une conversation",
         "tags": [
           "messages"
         ]
@@ -1160,11 +1287,39 @@
           "media"
         ]
       }
+    },
+    "/v1/media/file/{filename}": {
+      "get": {
+        "operationId": "MediaController_serve",
+        "parameters": [
+          {
+            "name": "filename",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "tags": [
+          "media"
+        ]
+      }
     }
   },
   "info": {
-    "title": "orsay-api",
-    "description": "API unifi\u00e9e r\u00e9seaux sociaux \u2014 Instagram & WhatsApp",
+    "title": "PlugKit API",
+    "description": "One API to publish, read, and reply across Instagram, WhatsApp, TikTok, YouTube, X & Telegram — built for AI agents. Authenticate every request with a Bearer API key (sk_…).",
     "version": "0.1.0",
     "contact": {}
   },
@@ -1178,9 +1333,9 @@
   "components": {
     "securitySchemes": {
       "api-key": {
+        "type": "http",
         "scheme": "bearer",
-        "bearerFormat": "sk_...",
-        "type": "http"
+        "bearerFormat": "sk_..."
       }
     },
     "schemas": {
@@ -1246,7 +1401,11 @@
             "type": "string",
             "enum": [
               "INSTAGRAM",
-              "WHATSAPP"
+              "WHATSAPP",
+              "TIKTOK",
+              "TELEGRAM",
+              "YOUTUBE",
+              "X"
             ]
           },
           "profileId": {
@@ -1255,7 +1414,7 @@
           },
           "externalId": {
             "type": "string",
-            "description": "ID du compte c\u00f4t\u00e9 plateforme (IG business account id / WA phone number id)"
+            "description": "ID du compte côté plateforme (IG business account id / WA phone number id)"
           },
           "username": {
             "type": "string",
@@ -1267,7 +1426,7 @@
           },
           "accessToken": {
             "type": "string",
-            "description": "Token plateforme (long IG / syst\u00e8me WA)"
+            "description": "Token plateforme (long IG / système WA)"
           },
           "metadata": {
             "type": "object"
@@ -1285,11 +1444,11 @@
         "properties": {
           "profileId": {
             "type": "string",
-            "description": "Profil propri\u00e9taire du post"
+            "description": "Profil propriétaire du post"
           },
           "content": {
             "type": "string",
-            "description": "Texte / l\u00e9gende du post"
+            "description": "Texte / légende du post"
           },
           "accountIds": {
             "description": "IDs des comptes cibles (Account.id)",
@@ -1299,7 +1458,7 @@
             }
           },
           "mediaUrls": {
-            "description": "URLs des m\u00e9dias",
+            "description": "URLs des médias",
             "type": "array",
             "items": {
               "type": "string"
@@ -1312,7 +1471,12 @@
           "publishNow": {
             "type": "boolean",
             "default": false,
-            "description": "Publier imm\u00e9diatement"
+            "description": "Publier immédiatement"
+          },
+          "asDraft": {
+            "type": "boolean",
+            "default": false,
+            "description": "TikTok uniquement : envoyer la vidéo en brouillon (Content Posting API, scope video.upload) au lieu d'une publication directe (video.publish). Le créateur finalise le post dans l'app TikTok."
           }
         },
         "required": [
@@ -1326,18 +1490,18 @@
         "properties": {
           "accountId": {
             "type": "string",
-            "description": "Compte (Account.id) propri\u00e9taire de la conversation"
+            "description": "Compte (Account.id) propriétaire de la conversation"
           },
           "contactHandle": {
             "type": "string",
-            "description": "Identifiant du contact c\u00f4t\u00e9 plateforme (PSID IG / wa_id WhatsApp)"
+            "description": "Identifiant du contact côté plateforme (PSID IG / wa_id WhatsApp)"
           },
           "contactName": {
             "type": "string"
           },
           "externalConversationId": {
             "type": "string",
-            "description": "ID de conversation c\u00f4t\u00e9 plateforme (sinon = contactHandle)"
+            "description": "ID de conversation côté plateforme (sinon = contactHandle)"
           }
         },
         "required": [
@@ -1358,5 +1522,10 @@
         ]
       }
     }
-  }
+  },
+  "security": [
+    {
+      "api-key": []
+    }
+  ]
 }

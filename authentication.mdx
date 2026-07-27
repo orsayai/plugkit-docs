@@ -1,10 +1,24 @@
 ---
 title: "Authentication"
-description: "How PlugKit API keys work."
+description: "How PlugKit authenticates the dashboard and your code."
 ---
 
-PlugKit uses **API keys** sent as a Bearer token. Every request (except
-`/v1/health`) must include:
+PlugKit has two ways in, both resolving to **your account**:
+
+- **Dashboard session** — you sign in at [plugkit.co/dashboard](https://plugkit.co/dashboard)
+  with Google, GitHub, or email + password. The dashboard uses that session; you
+  never handle a token yourself.
+- **API key** — for your own code. A Bearer key sent on every request. Create and
+  manage keys from the dashboard's **API Keys** section.
+
+Everything is scoped per account: a key only ever sees the profiles, accounts,
+posts and conversations that belong to the user who created it.
+
+## Getting your first key
+
+There's no chicken-and-egg: sign in to the dashboard, open **API Keys → New Key**,
+name it (e.g. "Production server"), and copy the value. Then send it on every
+request:
 
 ```
 Authorization: Bearer sk_your_key
@@ -14,13 +28,14 @@ Authorization: Bearer sk_your_key
 
 Keys are `sk_` followed by 64 hex characters. They are **hashed** server-side —
 PlugKit only ever shows the full key **once**, at creation. Store it in a secret
-manager, never in client-side code.
+manager, never in client-side code or a git repo.
 
 ## Managing keys
 
 <CardGroup cols={2}>
   <Card title="Create a key" icon="plus">
-    `POST /v1/api-keys` — returns the plaintext key one time.
+    Dashboard **API Keys → New Key**, or `POST /v1/api-keys` — returns the
+    plaintext key one time.
   </Card>
   <Card title="List keys" icon="list">
     `GET /v1/api-keys` — shows prefixes and metadata, never the secret.
@@ -34,7 +49,7 @@ manager, never in client-side code.
 </CardGroup>
 
 <Warning>
-  A leaked key can act on every connected account in your profile. Revoke and
+  A leaked key can act on every account in your PlugKit account. Revoke and
   rotate immediately if one is exposed.
 </Warning>
 
@@ -42,5 +57,11 @@ manager, never in client-side code.
 
 | Status | Meaning |
 | ------ | ------- |
-| `401 Unauthorized` | Missing, malformed, or revoked key. |
-| `403 Forbidden` | Key is valid but not allowed for this resource. |
+| `401 Unauthorized` | Missing, malformed, expired, or revoked credential. |
+| `403 Forbidden` | Authenticated but not allowed for this resource. |
+| `404 Not Found` | The resource doesn't exist **or** isn't owned by your account. |
+
+<Note>
+  `404` is intentionally returned instead of `403` when you request a resource
+  that belongs to another account, so keys can't probe for existence.
+</Note>

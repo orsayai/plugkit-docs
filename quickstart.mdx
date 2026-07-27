@@ -3,20 +3,20 @@ title: "Quickstart"
 description: "From zero to your first published post."
 ---
 
-## 1. Get an API key
+## 1. Create your account & API key
 
-Open the [test console](https://api.plugkit.co/dashboard.html) and create a key,
-or call the API once you have one. Keys look like `sk_...` and are shown only
-once — store them securely.
+Sign in to the [PlugKit dashboard](https://plugkit.co/dashboard) with Google,
+GitHub, or email + password. Then open **API Keys → New Key** and copy the key —
+it looks like `sk_...` and is shown **only once**.
 
 <Note>
   All requests go to `https://api.plugkit.co/v1` and require the header
-  `Authorization: Bearer sk_...`.
+  `Authorization: Bearer sk_...`. The key scopes every call to your account.
 </Note>
 
 ## 2. Make your first call
 
-Check the key works by listing your profiles:
+List your profiles to confirm the key works:
 
 <CodeGroup>
 
@@ -43,9 +43,20 @@ print(r.json())
 
 </CodeGroup>
 
-## 3. Connect an account
+## 3. Create a profile
 
-Start the OAuth flow to link an Instagram business account:
+A profile groups the accounts you connect. Create one and keep its `id`:
+
+```bash
+curl -X POST https://api.plugkit.co/v1/profiles \
+  -H "Authorization: Bearer sk_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "My brand" }'
+```
+
+## 4. Connect an account
+
+Start the OAuth flow to link an account (Instagram shown here):
 
 ```bash
 curl "https://api.plugkit.co/v1/connect/instagram?profileId=YOUR_PROFILE_ID" \
@@ -53,9 +64,11 @@ curl "https://api.plugkit.co/v1/connect/instagram?profileId=YOUR_PROFILE_ID" \
 ```
 
 You get back an `authUrl` — open it in a browser, approve, and the account is
-created. Full walkthrough in [Connect Instagram](/guides/connect-instagram).
+created. All six platforms are covered in
+[Connecting accounts](/guides/connecting-accounts). You can also do this in two
+clicks from the dashboard's **Connections** page.
 
-## 4. Publish
+## 5. Publish
 
 ```bash
 curl -X POST https://api.plugkit.co/v1/posts \
@@ -64,7 +77,9 @@ curl -X POST https://api.plugkit.co/v1/posts \
   -d '{
     "profileId": "YOUR_PROFILE_ID",
     "content": "Hello from PlugKit 👋",
-    "mediaUrls": ["https://example.com/photo.jpg"]
+    "accountIds": ["YOUR_ACCOUNT_ID"],
+    "mediaUrls": ["https://example.com/photo.jpg"],
+    "publishNow": true
   }'
 ```
 
