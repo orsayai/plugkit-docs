@@ -1,0 +1,78 @@
+---
+title: "WhatsApp"
+description: "Send and receive WhatsApp messages via the Cloud API."
+icon: "whatsapp"
+---
+
+WhatsApp is a **messaging-only** integration built on Meta's WhatsApp **Cloud
+API**. No publishing, comments or analytics — it's a two-way conversation channel.
+
+<CardGroup cols={2}>
+  <Card title="Messaging" icon="comments">Send & receive text messages.</Card>
+  <Card title="Business info" icon="circle-info">Read WABA & phone numbers.</Card>
+</CardGroup>
+
+## Connect
+
+Unlike the OAuth platforms, WhatsApp connects from **server-side credentials**
+(phone number id, WhatsApp Business Account id, and an access token) configured
+on your PlugKit deployment. One call links them to a profile:
+
+```bash
+curl -X POST "https://api.plugkit.co/v1/connect/whatsapp/from-env?profileId=YOUR_PROFILE_ID" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+<Note>
+  This uses the `WHATSAPP_*` credentials (from Meta → WhatsApp → API Setup) set
+  on the server. It's the fastest path for your own number; per-customer
+  onboarding via Embedded Signup can be added later.
+</Note>
+
+## Send a message
+
+WhatsApp models a thread as a **conversation**. Create/find one for a recipient,
+then send:
+
+```bash
+# create or find the conversation for a phone number (international format)
+curl -X POST https://api.plugkit.co/v1/conversations \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "accountId": "ACCOUNT_ID", "contactHandle": "33612345678", "externalConversationId": "33612345678" }'
+
+# then send text into it
+curl -X POST https://api.plugkit.co/v1/conversations/CONVERSATION_ID/messages \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "text": "Hello from PlugKit!" }'
+```
+
+<Warning>
+  Meta's **24-hour window**: you can freely message a user who wrote to you in
+  the last 24h. Outside that window you must send an approved **message
+  template**.
+</Warning>
+
+## Read the inbox
+
+Inbound messages arrive via [webhooks](/guides/webhooks). List conversations and
+messages the same way as any platform:
+
+```bash
+curl "https://api.plugkit.co/v1/conversations?accountId=ACCOUNT_ID" -H "Authorization: Bearer sk_your_key"
+curl https://api.plugkit.co/v1/conversations/CONVERSATION_ID/messages -H "Authorization: Bearer sk_your_key"
+```
+
+## Business info
+
+Inspect the WhatsApp Business Account and its phone numbers (name, quality
+rating, status):
+
+```bash
+curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/whatsapp-info \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+## Permissions
+
+Uses `whatsapp_business_messaging` (send/receive) and
+`whatsapp_business_management` (business info).

@@ -1,0 +1,60 @@
+---
+title: "Telegram"
+description: "Post to channels and receive messages with a Telegram bot."
+icon: "telegram"
+---
+
+Telegram is the simplest platform to connect — **no OAuth, no app review**. You
+create a bot, paste its token, and you can **publish to channels** and **receive
+messages**.
+
+<CardGroup cols={2}>
+  <Card title="Publish" icon="paper-plane">Post to a channel/group.</Card>
+  <Card title="Messaging" icon="comments">Receive & reply to chats.</Card>
+</CardGroup>
+
+## Connect
+
+Create a bot with [@BotFather](https://t.me/BotFather) (`/newbot`), copy the
+token, and connect it:
+
+```bash
+curl -X POST https://api.plugkit.co/v1/connect/telegram \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "profileId": "YOUR_PROFILE_ID", "botToken": "123456:AA..." }'
+```
+
+PlugKit validates the token (`getMe`) and stores the bot. No consent screen, no
+review.
+
+## Publish to a channel
+
+Add your bot as an **admin** of the target channel/group, then publish. Media is
+passed as a URL:
+
+```bash
+curl -X POST https://api.plugkit.co/v1/posts \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "profileId": "PROFILE_ID", "accountIds": ["ACCOUNT_ID"],
+        "content": "Hello channel 👋", "mediaUrls": ["https://…/video.mp4"], "publishNow": true }'
+```
+
+<Note>
+  A Telegram bot can only post where it's a member/admin. For a channel, add the
+  bot as an administrator first — that's a Telegram rule.
+</Note>
+
+## Messaging
+
+Users who message your bot show up as **conversations**. Read and reply like any
+platform:
+
+```bash
+curl "https://api.plugkit.co/v1/conversations?accountId=ACCOUNT_ID" -H "Authorization: Bearer sk_your_key"
+curl -X POST https://api.plugkit.co/v1/conversations/CONVERSATION_ID/messages \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" -d '{ "text": "Hi! 👋" }'
+```
+
+## Not supported
+
+Telegram has no comments or analytics surface here.

@@ -1,0 +1,63 @@
+---
+title: "Profiles & accounts"
+description: "The data model behind every PlugKit request."
+icon: "sitemap"
+---
+
+Everything in PlugKit hangs off three objects. Understanding them makes the rest
+of the API obvious.
+
+<Steps>
+  <Step title="Your account" icon="user">
+    Created when you sign in to the [dashboard](https://plugkit.co/dashboard).
+    Every profile, account, post and conversation is **scoped to you** — an API
+    key only ever sees your own data.
+  </Step>
+  <Step title="Profiles" icon="folder">
+    A **profile** is a workspace / brand that groups connected accounts. You can
+    have several (e.g. one per client). Create one before connecting anything.
+  </Step>
+  <Step title="Accounts" icon="link">
+    An **account** is a connected social/messaging identity (an Instagram
+    business account, a Telegram bot, …) living inside a profile. You act on the
+    world through accounts.
+  </Step>
+</Steps>
+
+```bash Create a profile
+curl -X POST https://api.plugkit.co/v1/profiles \
+  -H "Authorization: Bearer sk_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "My brand" }'
+```
+
+## How you connect accounts
+
+Each platform uses one of three patterns. The [platform pages](/platforms/instagram)
+document the exact flow and specifics for each.
+
+| Pattern | Platforms | How |
+| --- | --- | --- |
+| **OAuth redirect** | Instagram, TikTok, YouTube, X | `GET /connect/{platform}?profileId=…` → open the returned `authUrl` → the platform redirects back and PlugKit stores the token |
+| **Bot token** | Telegram | `POST /connect/telegram` with a token from @BotFather |
+| **Cloud credentials** | WhatsApp | `POST /connect/whatsapp/from-env` |
+
+## Managing accounts
+
+```bash List accounts
+curl "https://api.plugkit.co/v1/accounts?status=CONNECTED" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+```bash Disconnect
+curl -X DELETE https://api.plugkit.co/v1/accounts/ACCOUNT_ID \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+Each account exposes its `platform`, `username`, `status`, and the `profileId`
+it belongs to — never its access token.
+
+<Note>
+  Requesting a resource that belongs to another account returns `404`, not
+  `403`, so keys can't probe for existence.
+</Note>

@@ -1,0 +1,61 @@
+---
+title: "TikTok"
+description: "Publish videos to TikTok via the official Login Kit + Content Posting API."
+icon: "tiktok"
+---
+
+TikTok is a **video-publishing** integration via TikTok's Login Kit and Content
+Posting API.
+
+<CardGroup cols={2}>
+  <Card title="Publish video" icon="video">Post a public MP4.</Card>
+  <Card title="Drafts" icon="pen">Send to drafts to finish in-app.</Card>
+</CardGroup>
+
+## Connect
+
+OAuth flow (Login Kit):
+
+```bash
+curl "https://api.plugkit.co/v1/connect/tiktok?profileId=YOUR_PROFILE_ID" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+Open the returned `authUrl`, approve on TikTok's consent screen, and the account
+is stored after the callback.
+
+## Publish a video
+
+Provide a **public `.mp4` URL** in `mediaUrls`:
+
+```bash
+curl -X POST https://api.plugkit.co/v1/posts \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "profileId": "PROFILE_ID", "accountIds": ["ACCOUNT_ID"],
+        "content": "New drop 🎬", "mediaUrls": ["https://…/video.mp4"], "publishNow": true }'
+```
+
+### Send to drafts
+
+Set `asDraft: true` to push the video into the TikTok app's drafts instead of
+posting — the user finalizes and publishes it from their phone:
+
+```json
+{ "profileId": "…", "accountIds": ["…"], "content": "…",
+  "mediaUrls": ["https://…/video.mp4"], "asDraft": true }
+```
+
+<Warning>
+  Until your TikTok app passes review, videos publish as **`SELF_ONLY`**
+  (visible only to the posting account). This is a TikTok requirement, not a
+  PlugKit limit — the `asDraft` flow is the recommended path pre-review.
+</Warning>
+
+## Not supported
+
+TikTok's API doesn't expose messaging, comments or account analytics to
+third-party apps, so those aren't available here.
+
+## Permissions
+
+Scopes: `user.info.basic`, `video.publish`, `video.upload`.

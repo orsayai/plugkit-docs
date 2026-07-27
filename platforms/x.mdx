@@ -1,0 +1,69 @@
+---
+title: "X (Twitter)"
+description: "Post tweets with media and read account & tweet analytics."
+icon: "x-twitter"
+---
+
+X is a **publishing + analytics** integration via the X API v2 (OAuth 2.0 with
+PKCE, auto-refreshing tokens).
+
+<CardGroup cols={2}>
+  <Card title="Publish" icon="feather">Text, images or video.</Card>
+  <Card title="Analytics" icon="chart-simple">Account & per-tweet metrics.</Card>
+</CardGroup>
+
+## Connect
+
+OAuth 2.0 (PKCE) flow:
+
+```bash
+curl "https://api.plugkit.co/v1/connect/x?profileId=YOUR_PROFILE_ID" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+Open the returned `authUrl` and approve. The callback `/connect/x/callback` must
+be registered in your X app's **User authentication settings**.
+
+## Publish a tweet
+
+X accepts **text only**, **1–4 images**, **or** a single video/GIF (media is
+optional):
+
+```bash
+curl -X POST https://api.plugkit.co/v1/posts \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "profileId": "PROFILE_ID", "accountIds": ["ACCOUNT_ID"],
+        "content": "We just shipped 🚀", "mediaUrls": ["https://…/image.jpg"], "publishNow": true }'
+```
+
+The response includes the tweet's `platformPostId` and `platformPostUrl`.
+
+## Analytics
+
+Account-level metrics (the six the X API exposes):
+
+```bash
+curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/x-analytics -H "Authorization: Bearer sk_your_key"
+```
+
+Per-tweet metrics (likes, retweets, replies, quotes, impressions, bookmarks) —
+the tweet id is the number ending its URL, or the `platformPostId` from
+publishing:
+
+```bash
+curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/x-tweets/TWEET_ID -H "Authorization: Bearer sk_your_key"
+```
+
+<Note>
+  Detailed impression/engagement data lives at the **tweet** level, not the
+  account level — an X API limitation, not PlugKit's.
+</Note>
+
+## Not supported
+
+X messaging (DMs) isn't exposed through this integration.
+
+## Permissions
+
+Scopes: `tweet.read`, `tweet.write`, `users.read`, `media.write`,
+`offline.access` (for token refresh).

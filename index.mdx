@@ -8,21 +8,19 @@ PlugKit is a single REST API that connects social and messaging accounts through
 send messages, manage comments, pull analytics — without integrating each
 platform yourself. Same request shape everywhere, no per-API quirks.
 
-## Supported platforms
+## Platforms
 
-| Platform | Publish | Messaging | Comments | Analytics | How you connect |
-| --- | :---: | :---: | :---: | :---: | --- |
-| **Instagram** | ✅ | ✅ | ✅ | ✅ | OAuth (Meta) |
-| **WhatsApp** | — | ✅ | — | — | Cloud API credentials |
-| **TikTok** | ✅ | — | — | — | OAuth (Login Kit) |
-| **YouTube** | ✅ | — | — | — | OAuth (Google) |
-| **X (Twitter)** | ✅ | — | — | ✅ | OAuth 2.0 (PKCE) |
-| **Telegram** | ✅ | ✅ | — | — | Bot token (@BotFather) |
+Each platform has its own capabilities and connection flow — see its page for
+the specifics.
 
-<Note>
-  TikTok publishes as `SELF_ONLY` and YouTube as `private` until each app passes
-  its platform review — this is a platform rule, not a PlugKit limit.
-</Note>
+| Platform | Publish | Messaging | Comments | Analytics |
+| --- | :---: | :---: | :---: | :---: |
+| [**Instagram**](/platforms/instagram) | ✅ | ✅ | ✅ | ✅ |
+| [**WhatsApp**](/platforms/whatsapp) | — | ✅ | — | — |
+| [**TikTok**](/platforms/tiktok) | ✅ | — | — | — |
+| [**YouTube**](/platforms/youtube) | ✅ | — | — | — |
+| [**X (Twitter)**](/platforms/x) | ✅ | — | — | ✅ |
+| [**Telegram**](/platforms/telegram) | ✅ | ✅ | — | — |
 
 <CardGroup cols={2}>
   <Card title="Quickstart" icon="rocket" href="/quickstart">
@@ -31,8 +29,8 @@ platform yourself. Same request shape everywhere, no per-API quirks.
   <Card title="Authentication" icon="key" href="/authentication">
     How the dashboard session and API keys work.
   </Card>
-  <Card title="Connect accounts" icon="link" href="/guides/connecting-accounts">
-    OAuth and token flows for all six platforms.
+  <Card title="Profiles & accounts" icon="sitemap" href="/concepts/profiles-and-accounts">
+    The data model behind every request, and how connections work.
   </Card>
   <Card title="API Reference" icon="code" href="/api-reference">
     Every endpoint, with a live playground to try them.
@@ -47,15 +45,15 @@ platform yourself. Same request shape everywhere, no per-API quirks.
     or email, then create an API key. Everything you do is scoped to your account.
   </Step>
   <Step title="Create a profile">
-    A profile groups the accounts you connect (think of it as a workspace / brand).
+    A profile groups the accounts you connect (a workspace / brand).
   </Step>
   <Step title="Connect an account">
-    Send your user through the platform's official OAuth flow (or paste a token
-    for Telegram/WhatsApp). PlugKit stores the token and exposes the account.
+    Send your user through the platform's flow — OAuth, a bot token, or Cloud
+    credentials, depending on the platform.
   </Step>
   <Step title="Act through one API">
-    Publish posts, read and reply to messages, manage comments, pull metrics —
-    the same shape of request whatever the platform.
+    Publish, message, moderate comments, pull metrics — the same request shape
+    whatever the platform.
   </Step>
 </Steps>
 

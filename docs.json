@@ -23,10 +23,23 @@
             "pages": ["index", "quickstart", "authentication"]
           },
           {
+            "group": "Core concepts",
+            "pages": ["concepts/profiles-and-accounts"]
+          },
+          {
+            "group": "Platforms",
+            "pages": [
+              "platforms/instagram",
+              "platforms/whatsapp",
+              "platforms/tiktok",
+              "platforms/youtube",
+              "platforms/x",
+              "platforms/telegram"
+            ]
+          },
+          {
             "group": "Guides",
             "pages": [
-              "guides/connecting-accounts",
-              "guides/connect-instagram",
               "guides/publishing",
               "guides/messaging",
               "guides/analytics",

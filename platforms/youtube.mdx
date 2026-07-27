@@ -1,0 +1,49 @@
+---
+title: "YouTube"
+description: "Upload videos to YouTube via the Google Data API."
+icon: "youtube"
+---
+
+YouTube is a **video-publishing** integration via Google's YouTube Data API.
+
+<CardGroup cols={1}>
+  <Card title="Publish video" icon="video">Upload a video to a channel.</Card>
+</CardGroup>
+
+## Connect
+
+Google OAuth flow:
+
+```bash
+curl "https://api.plugkit.co/v1/connect/youtube?profileId=YOUR_PROFILE_ID" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+Open the returned `authUrl`, approve on Google's consent screen, and the channel
+is connected after the callback.
+
+## Publish a video
+
+Provide a **public video URL** in `mediaUrls`; the caption becomes the video
+title/description:
+
+```bash
+curl -X POST https://api.plugkit.co/v1/posts \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "profileId": "PROFILE_ID", "accountIds": ["ACCOUNT_ID"],
+        "content": "Episode 1", "mediaUrls": ["https://…/video.mp4"], "publishNow": true }'
+```
+
+<Warning>
+  Until your Google/YouTube app is **verified**, uploads land as **`private`**.
+  This is a Google requirement — publish publicly once verification is granted.
+</Warning>
+
+## Not supported
+
+The integration is upload-only for now — messaging, comments and analytics
+aren't exposed.
+
+## Permissions
+
+Scope: `youtube.upload`.
