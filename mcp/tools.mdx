@@ -1,0 +1,110 @@
+---
+title: "Tools & workflows"
+description: "The 37 tools and 3 ready-made workflows exposed by the PlugKit MCP server."
+---
+
+Every tool maps to the REST API you already know — same vocabulary, same ids.
+Tools marked **write** are hidden entirely from a session granted `mcp:read`.
+
+<Note>
+  Start with `whoami`. Nearly every other tool needs a `profileId` or an
+  `accountId`, and `whoami` returns both, plus what each platform supports.
+</Note>
+
+## Profiles
+
+| Tool | | What it does |
+| --- | --- | --- |
+| `whoami` | read | Authenticated identity, profiles, connected accounts, and per-platform capabilities. The entry point. |
+| `list_profiles` | read | Profiles with their account and post counts. |
+| `get_profile` | read | One profile by id. |
+| `create_profile` | write | Create a profile (a workspace grouping the accounts of one brand or client). |
+| `update_profile` | write | Rename, recolour, re-describe, or set as default. |
+| `delete_profile` | write | Delete a profile **and** its accounts, posts and conversations. Irreversible. |
+
+## Accounts & connections
+
+| Tool | | What it does |
+| --- | --- | --- |
+| `list_accounts` | read | Connected accounts, filterable by profile, platform or status. |
+| `get_account` | read | One account (the platform token is never exposed). |
+| `get_connect_url` | write | Generate the OAuth link to attach an Instagram, TikTok, YouTube or X account. The assistant hands it to you — it can't follow it itself. |
+| `connect_telegram` | write | Attach a Telegram bot from its BotFather token (validated before storage). |
+| `connect_whatsapp` | write | Attach the WhatsApp Business number configured on the server. |
+| `connect_account_manually` | write | Attach an account from credentials you already hold. Advanced. |
+| `disconnect_account` | write | Disconnect and wipe the token. Posts and conversations are kept. |
+| `subscribe_instagram_webhooks` | write | Subscribe an Instagram account to Meta webhooks so DMs arrive in real time. |
+
+## Posts
+
+| Tool | | What it does |
+| --- | --- | --- |
+| `list_posts` | read | Posts with their targets and status, filterable and searchable. |
+| `get_post` | read | One post: content, status, and per target the live URL or the error. |
+| `create_post` | write | Create a post for several accounts at once — draft, scheduled (`scheduledFor`) or immediate (`publishNow`). |
+| `update_post` | write | Edit or reschedule a draft/scheduled post. Published posts are frozen. |
+| `publish_post` | write | Publish now: a draft, a scheduled post brought forward, or a retry (already-published targets are skipped, so no duplicates). |
+| `delete_post` | write | Delete on PlugKit and cancel the schedule. Does not unpublish what's already live. |
+| `upload_media` | write | Re-host a media file on the PlugKit domain and return the URL. Required for TikTok. |
+
+<Info>
+  WhatsApp and Telegram don't do posts — only messages. `whoami` returns the
+  capability matrix so the assistant can filter targets itself.
+</Info>
+
+## Messaging
+
+| Tool | | What it does |
+| --- | --- | --- |
+| `list_conversations` | read | The unified inbox across Instagram, WhatsApp and Telegram. |
+| `get_conversation` | read | One conversation (contact, account, platform). |
+| `list_messages` | read | History of a conversation with direction and delivery status. |
+| `list_instagram_threads` | read | Raw Instagram threads with participant IGSIDs — to find a contact the inbox doesn't know yet. |
+| `send_message` | write | Reply in an existing conversation. Immediate and irreversible. |
+| `create_conversation` | write | Open a thread with a contact identified by their platform id. |
+| `sync_conversations` | write | Pull conversations and messages from the platform API when the inbox looks stale. |
+| `send_direct_message` | write | Send straight to a platform identifier, bypassing the inbox. Fallback path. |
+
+## Comments & analytics
+
+| Tool | | What it does |
+| --- | --- | --- |
+| `get_account_analytics` | read | Followers, following, post count, and reach where the platform exposes it. |
+| `get_account_media` | read | Recent posts on the account with their metrics and `mediaId`. |
+| `get_post_analytics` | read | Likes, comments, shares and impressions for one published post. |
+| `get_comments` | read | Comments on a published post. |
+| `reply_to_comment` | write | Reply publicly — threaded on a `commentId`, or on the post itself. |
+
+## API keys
+
+| Tool | | What it does |
+| --- | --- | --- |
+| `list_api_keys` | read | Keys with prefix, last use and revocation state. Never the secret. |
+| `create_api_key` | write | Create a key. The plaintext is returned **once**, and it lands in the conversation — only use it on request. |
+| `revoke_api_key` | write | Revoke immediately, including the key this connection may be running on. |
+
+## Workflows
+
+Three prompts ship with the server. Clients surface them as commands — in Claude
+Code, `/mcp__plugkit__publish`, `/mcp__plugkit__inbox`, `/mcp__plugkit__report`.
+
+<CardGroup cols={3}>
+  <Card title="publish" icon="paper-plane">
+    Publish one message to every eligible account of a profile, after showing you
+    the targets and the final text.
+  </Card>
+  <Card title="inbox" icon="inbox">
+    Sync each messaging account, surface unanswered incoming messages, and draft
+    a reply for each.
+  </Card>
+  <Card title="report" icon="chart-line">
+    Published posts, failures and per-account analytics over a period, as a table
+    plus three recommendations.
+  </Card>
+</CardGroup>
+
+## Errors
+
+Tools return the API's own errors as text rather than throwing, so the assistant
+can explain and retry. A `404` means the resource doesn't exist **or** doesn't
+belong to your account — see [Authentication](/authentication).

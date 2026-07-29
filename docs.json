@@ -27,6 +27,10 @@
             "pages": ["concepts/profiles-and-accounts"]
           },
           {
+            "group": "MCP",
+            "pages": ["mcp/overview", "mcp/clients", "mcp/tools"]
+          },
+          {
             "group": "Platforms",
             "pages": [
               "platforms/instagram",

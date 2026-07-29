@@ -1,0 +1,122 @@
+---
+title: "MCP server"
+description: "Give Claude, Cursor, VS Code or any MCP client the ability to publish, read and reply on your social accounts."
+---
+
+PlugKit ships a hosted **MCP server**: the same capabilities as the REST API,
+exposed as tools an AI assistant can call. Point a client at one URL, sign in,
+and the assistant can list your connected accounts, publish a post, triage the
+inbox, or pull analytics — no code, no SDK.
+
+```
+https://api.plugkit.co/mcp
+```
+
+<Note>
+  Transport is **Streamable HTTP** (stateless). There is nothing to install and
+  nothing to run locally — no `npx`, no local proxy.
+</Note>
+
+## Connect in one click
+
+<CardGroup cols={2}>
+  <Card title="Claude" icon="message" href="/mcp/clients#claude-web-desktop-mobile">
+    Settings → Connectors → Add custom connector → paste the URL.
+  </Card>
+  <Card title="Claude Code" icon="terminal" href="/mcp/clients#claude-code">
+    `claude mcp add -t http plugkit https://api.plugkit.co/mcp`
+  </Card>
+  <Card title="Cursor" icon="arrow-pointer" href="/mcp/clients#cursor">
+    One-click install link, or three lines in `~/.cursor/mcp.json`.
+  </Card>
+  <Card title="VS Code" icon="code" href="/mcp/clients#vs-code">
+    One-click install link, or `code --add-mcp`.
+  </Card>
+</CardGroup>
+
+Fastest path of all: the **[MCP section of the dashboard](https://plugkit.co/dashboard/mcp)**
+has an install button per client, a ready-to-paste config for everything else,
+and the list of assistants you've already connected.
+
+## Authentication
+
+Two ways in, same account scoping as the REST API — an assistant only ever sees
+the profiles, accounts, posts and conversations of the PlugKit user it acts for.
+
+<Tabs>
+  <Tab title="Sign in (OAuth)">
+    The recommended path, and the only one that needs no secret in a config file.
+    PlugKit is a full OAuth 2.1 authorization server (PKCE, no client secret): the
+    client sends you to a PlugKit consent screen, you approve, and it stores a
+    token of its own.
+
+    You choose what you grant:
+
+    | Scope | What the assistant can do |
+    | --- | --- |
+    | `mcp:read` | Read profiles, accounts, posts, conversations and analytics. Write tools are not even listed. |
+    | `mcp:write` | Everything above, plus publish, send messages, reply to comments, connect and disconnect accounts. |
+
+    Revoke any assistant at any time from **Settings → Connected apps** in the
+    dashboard.
+  </Tab>
+  <Tab title="API key">
+    For clients without OAuth support, send a key as a plain Bearer header:
+
+    ```json
+    {
+      "mcpServers": {
+        "plugkit": {
+          "type": "http",
+          "url": "https://api.plugkit.co/mcp",
+          "headers": { "Authorization": "Bearer sk_your_key" }
+        }
+      }
+    }
+    ```
+
+    Create the key in the dashboard's [API Keys](https://plugkit.co/dashboard/api-keys)
+    section. A key carries **full access** — it has no scopes — so prefer OAuth
+    when the client supports it.
+  </Tab>
+</Tabs>
+
+## What an assistant can do
+
+<CardGroup cols={2}>
+  <Card title="Publish" icon="paper-plane">
+    Draft, schedule and publish to several accounts at once, with media.
+  </Card>
+  <Card title="Inbox" icon="inbox">
+    Read and answer Instagram, WhatsApp and Telegram conversations.
+  </Card>
+  <Card title="Comments" icon="comments">
+    Read comments on a published post and reply publicly.
+  </Card>
+  <Card title="Analytics" icon="chart-line">
+    Followers, reach, and per-post metrics where the platform exposes them.
+  </Card>
+  <Card title="Connections" icon="plug">
+    Hand the user an OAuth link to connect a new account, or disconnect one.
+  </Card>
+  <Card title="All 37 tools" icon="wrench" href="/mcp/tools">
+    The full reference, plus the three ready-made workflows.
+  </Card>
+</CardGroup>
+
+## Safety
+
+Publishing a post, sending a message and replying to a comment are **public and
+immediate**. The server instructs the model to show the exact content and get
+your approval before calling those tools, but that is a prompt, not a lock — the
+real guarantees are the ones you control:
+
+- Grant `mcp:read` only, when you just want reporting and triage.
+- Review the accounts a connected assistant can reach with `whoami`.
+- Revoke from **Settings → Connected apps** the moment you're done.
+
+<Warning>
+  `delete_profile` cascades to its accounts, posts and conversations, and
+  `revoke_api_key` can revoke the very key the connection runs on. Both are
+  write-scope tools — another reason to hand out `mcp:read` by default.
+</Warning>

@@ -1,0 +1,189 @@
+---
+title: "Connect a client"
+description: "Add the PlugKit MCP server to Claude, Claude Code, Cursor, VS Code, or any other MCP client."
+---
+
+Every client needs the same thing — the server URL:
+
+```
+https://api.plugkit.co/mcp
+```
+
+Clients that support OAuth (all the ones below) will open a PlugKit consent
+screen the first time they connect; approve it and you're done. There is no key
+to paste unless you want one.
+
+## Claude (web, desktop, mobile)
+
+<Steps>
+  <Step title="Open the connector settings">
+    In Claude, go to **Settings → Connectors**, then **Add custom connector**.
+  </Step>
+  <Step title="Paste the URL">
+    Name it `PlugKit` and paste `https://api.plugkit.co/mcp`. Leave the advanced
+    OAuth fields empty — PlugKit registers the client automatically.
+  </Step>
+  <Step title="Connect and approve">
+    Click **Connect**. Claude sends you to PlugKit, you sign in if needed, pick
+    read-only or full access, and approve.
+  </Step>
+  <Step title="Check it">
+    Ask Claude *"what PlugKit accounts do I have?"* — it should call `whoami`
+    and list your profiles and connected accounts.
+  </Step>
+</Steps>
+
+<Note>
+  Custom connectors are available on Free, Pro, Max, Team and Enterprise plans;
+  free accounts are limited to one custom connector.
+</Note>
+
+## Claude Code
+
+```bash
+claude mcp add -t http plugkit https://api.plugkit.co/mcp
+```
+
+Then run `/mcp` inside Claude Code and choose **Authenticate** — it opens the
+PlugKit consent screen in your browser. Add `-s user` to make the server
+available in every project instead of just the current one.
+
+With an API key instead of OAuth:
+
+```bash
+claude mcp add -t http plugkit https://api.plugkit.co/mcp \
+  --header "Authorization: Bearer sk_your_key"
+```
+
+The three PlugKit workflows show up as slash commands:
+`/mcp__plugkit__publish`, `/mcp__plugkit__inbox`, `/mcp__plugkit__report`.
+
+## Cursor
+
+<Card title="Add PlugKit to Cursor" icon="arrow-pointer" href="cursor://anysphere.cursor-deeplink/mcp/install?name=plugkit&config=eyJ0eXBlIjoiaHR0cCIsInVybCI6Imh0dHBzOi8vYXBpLnBsdWdraXQuY28vbWNwIn0%3D">
+  Opens Cursor and asks you to confirm the server.
+</Card>
+
+Or by hand — **Settings → MCP → Add new MCP server**, or edit
+`~/.cursor/mcp.json`:
+
+```json ~/.cursor/mcp.json
+{
+  "mcpServers": {
+    "plugkit": {
+      "type": "http",
+      "url": "https://api.plugkit.co/mcp"
+    }
+  }
+}
+```
+
+Cursor shows a **Needs login** state next to the server — click it to run the
+OAuth flow.
+
+## VS Code
+
+<Card title="Add PlugKit to VS Code" icon="code" href="vscode:mcp/install?%7B%22name%22%3A%22plugkit%22%2C%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fapi.plugkit.co%2Fmcp%22%7D">
+  Opens VS Code and asks you to confirm the server.
+</Card>
+
+Or from the command line:
+
+```bash
+code --add-mcp '{"name":"plugkit","type":"http","url":"https://api.plugkit.co/mcp"}'
+```
+
+Or by hand in `.vscode/mcp.json` (workspace) / your user `mcp.json`:
+
+```json .vscode/mcp.json
+{
+  "servers": {
+    "plugkit": {
+      "type": "http",
+      "url": "https://api.plugkit.co/mcp"
+    }
+  }
+}
+```
+
+## Any other client
+
+The server speaks plain MCP over Streamable HTTP, so anything that can add a
+remote server works — Windsurf, Zed, LibreChat, Goose, your own agent. The
+canonical config shape:
+
+```json
+{
+  "mcpServers": {
+    "plugkit": {
+      "type": "http",
+      "url": "https://api.plugkit.co/mcp"
+    }
+  }
+}
+```
+
+If the client doesn't do OAuth, add the header:
+
+```json
+{
+  "mcpServers": {
+    "plugkit": {
+      "type": "http",
+      "url": "https://api.plugkit.co/mcp",
+      "headers": { "Authorization": "Bearer sk_your_key" }
+    }
+  }
+}
+```
+
+### From your own code
+
+Any MCP SDK works. With the TypeScript SDK:
+
+```ts
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+
+const client = new Client({ name: "my-agent", version: "1.0.0" });
+await client.connect(
+  new StreamableHTTPClientTransport(new URL("https://api.plugkit.co/mcp"), {
+    requestInit: {
+      headers: { Authorization: `Bearer ${process.env.PLUGKIT_API_KEY}` },
+    },
+  }),
+);
+
+const { tools } = await client.listTools();
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="The client says 401 / unauthorized">
+    The server is reachable but the token isn't valid. With OAuth, disconnect and
+    reconnect the server so it runs the consent flow again. With an API key,
+    check the header is exactly `Authorization: Bearer sk_…` and that the key
+    hasn't been revoked in the dashboard.
+  </Accordion>
+  <Accordion title="Connected, but the tools do nothing useful">
+    Ask the assistant to call `whoami` first. Almost every tool needs a
+    `profileId` or an `accountId`, and `whoami` is what hands those out along
+    with what each platform supports.
+  </Accordion>
+  <Accordion title="Only read tools show up">
+    The token was granted `mcp:read`. Write tools are not registered at all for a
+    read-only session — reconnect and grant full access if you want the assistant
+    to publish and reply.
+  </Accordion>
+  <Accordion title="The client tries GET or SSE and fails">
+    The server is stateless: it answers `POST /mcp` and returns JSON. `GET` and
+    `DELETE` return `405`. Configure the server as **HTTP / Streamable HTTP**,
+    never as legacy **SSE**.
+  </Accordion>
+  <Accordion title="A one-click button does nothing">
+    The `cursor://` and `vscode:` links need the app installed on the same
+    machine as the browser, and the browser may ask you to allow opening an
+    external application. If it stays silent, fall back to the JSON config above.
+  </Accordion>
+</AccordionGroup>
