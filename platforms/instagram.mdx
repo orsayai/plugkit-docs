@@ -59,12 +59,12 @@ Read and reply to DMs. Inbound messages arrive via [webhooks](/guides/webhooks),
 or pull them on demand with sync:
 
 ```bash Sync + list
-curl -X POST "https://api.plugkit.co/v1/conversations/sync?accountId=ACCOUNT_ID" -H "Authorization: Bearer sk_your_key"
-curl "https://api.plugkit.co/v1/conversations?accountId=ACCOUNT_ID" -H "Authorization: Bearer sk_your_key"
+curl -X POST "https://api.plugkit.co/v1/inbox/conversations/sync?accountId=ACCOUNT_ID" -H "Authorization: Bearer sk_your_key"
+curl "https://api.plugkit.co/v1/inbox/conversations?accountId=ACCOUNT_ID" -H "Authorization: Bearer sk_your_key"
 ```
 
 ```bash Reply / send a direct DM
-curl -X POST https://api.plugkit.co/v1/conversations/CONVERSATION_ID/messages \
+curl -X POST https://api.plugkit.co/v1/inbox/conversations/CONVERSATION_ID/messages \
   -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" -d '{ "text": "Hi! 👋" }'
 ```
 
@@ -84,12 +84,21 @@ curl -X POST https://api.plugkit.co/v1/accounts/ACCOUNT_ID/comments/COMMENT_ID/r
 
 ## Analytics
 
+Instagram is the richest source in the [analytics store](/guides/analytics):
+views, reach, likes, comments, shares and saves per post, plus followers,
+reach and profile views measured daily. Posts published from the Instagram app
+are collected too.
+
 ```bash
-curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/insights -H "Authorization: Bearer sk_your_key"
+curl "https://api.plugkit.co/v1/analytics/summary?platform=instagram" \
+  -H "Authorization: Bearer sk_your_key"
 ```
 
-Returns followers, media count, reach, impressions and profile views. Details in
-the [Analytics guide](/guides/analytics).
+<Note>
+  Meta retired media `impressions` in favour of `views`. Older posts may carry
+  one and not the other — which is why an unavailable metric comes back `null`
+  rather than `0`.
+</Note>
 
 ## Permissions
 

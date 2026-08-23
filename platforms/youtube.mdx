@@ -6,8 +6,9 @@ icon: "youtube"
 
 YouTube is a **video-publishing** integration via Google's YouTube Data API.
 
-<CardGroup cols={1}>
+<CardGroup cols={2}>
   <Card title="Publish video" icon="video">Upload a video to a channel.</Card>
+  <Card title="Analytics" icon="chart-line">Views, likes, comments, subscribers.</Card>
 </CardGroup>
 
 ## Connect
@@ -24,14 +25,18 @@ is connected after the callback.
 
 ## Publish a video
 
-Provide a **public video URL** in `mediaUrls`; the caption becomes the video
-title/description:
+Provide a **public video URL**. YouTube requires a title — pass one explicitly
+with `title` (100 characters max); without it, PlugKit falls back to the start
+of `content`, which is a stopgap:
 
 ```bash
 curl -X POST https://api.plugkit.co/v1/posts \
   -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
   -d '{ "profileId": "PROFILE_ID", "accountIds": ["ACCOUNT_ID"],
-        "content": "Episode 1", "mediaUrls": ["https://…/video.mp4"], "publishNow": true }'
+        "title": "Episode 1 — how we built it",
+        "content": "Full description here…",
+        "mediaItems": [{ "type": "video", "url": "https://…/video.mp4" }],
+        "privacy": "public", "publishNow": true }'
 ```
 
 <Warning>
@@ -39,11 +44,25 @@ curl -X POST https://api.plugkit.co/v1/posts \
   This is a Google requirement — publish publicly once verification is granted.
 </Warning>
 
+`privacy` accepts `public`, `unlisted` or `private`.
+
+## Analytics
+
+YouTube feeds the [analytics store](/guides/analytics): views, likes and
+comments per video, plus subscriber count measured daily. Videos uploaded
+outside PlugKit are picked up too.
+
+<Note>
+  These are **totals since publication**, not a day-by-day series. Per-day views
+  live in the YouTube Analytics API, which requires a separate Google audit — so
+  the daily series PlugKit shows is the one it records itself, from the day you
+  connect. A channel that hides its subscriber count returns `null`, not `0`.
+</Note>
+
 ## Not supported
 
-The integration is upload-only for now — messaging, comments and analytics
-aren't exposed.
+Messaging and comments aren't exposed.
 
 ## Permissions
 
-Scope: `youtube.upload`.
+Scopes: `youtube.upload` (publishing) and `youtube.readonly` (analytics).

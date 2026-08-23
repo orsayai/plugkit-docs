@@ -1,0 +1,96 @@
+---
+title: "Facebook"
+description: "Publish to a Page, answer Messenger, moderate comments and read insights."
+icon: "facebook"
+---
+
+Facebook connects a **Page** — not a personal profile. Publishing, Messenger,
+comments and insights, through Meta's Graph API.
+
+<CardGroup cols={2}>
+  <Card title="Publish" icon="image">Text, images, videos.</Card>
+  <Card title="Messenger" icon="comments">Read & reply to DMs.</Card>
+  <Card title="Comments" icon="comment-dots">List, reply, private reply.</Card>
+  <Card title="Analytics" icon="chart-line">Impressions, reach, clicks, fans.</Card>
+</CardGroup>
+
+## Connect
+
+Facebook Login for Business. One authorization can attach several Pages, and the
+same screen can also grant [Meta Ads](/platforms/meta-ads) access:
+
+```bash
+curl "https://api.plugkit.co/v1/connect/facebook?profileId=YOUR_PROFILE_ID" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+Open the returned `authUrl`, pick the Pages to grant, and PlugKit stores one
+account per Page after the callback.
+
+<Note>
+  Page tokens are derived from the user token at connection time and refreshed
+  as needed. You never handle them.
+</Note>
+
+## Publish
+
+```bash
+curl -X POST https://api.plugkit.co/v1/posts \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "profileId": "PROFILE_ID", "accountIds": ["ACCOUNT_ID"],
+        "content": "We just shipped 🚀",
+        "mediaItems": [{ "type": "image", "url": "https://…/photo.jpg" }],
+        "publishNow": true }'
+```
+
+Text-only posts are fine — `mediaItems` is optional on Facebook. Videos are
+uploaded to the Page's video endpoint automatically based on the media type.
+
+## Messenger
+
+Conversations appear in the [unified inbox](/guides/messaging) like any other
+platform:
+
+```bash
+curl "https://api.plugkit.co/v1/inbox/conversations?accountId=ACCOUNT_ID" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+The same **24-hour window** as Instagram applies: free-form replies within 24h
+of the contact's last message.
+
+## Comments
+
+```bash
+# comments on a post
+curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/media/POST_ID/comments \
+  -H "Authorization: Bearer sk_your_key"
+
+# public reply, threaded under a comment
+curl -X POST https://api.plugkit.co/v1/accounts/ACCOUNT_ID/comments/COMMENT_ID/reply \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "message": "Thanks! 🙏" }'
+```
+
+Facebook Pages also support **private replies** — messaging a commenter who has
+never written to you, once per comment, within 7 days. That's what
+[comment → DM automations](/guides/campaigns) run on.
+
+## Analytics
+
+Facebook feeds the [analytics store](/guides/analytics) like every other
+publishing platform: post impressions, reach, clicks, likes, comments and
+shares, plus Page fans measured daily.
+
+## Permissions
+
+`pages_show_list`, `pages_read_engagement`, `pages_manage_posts`,
+`pages_messaging`, `pages_manage_engagement`, and **`pages_manage_metadata`**.
+
+<Warning>
+  Without `pages_manage_metadata`, the Page can't be subscribed to webhooks —
+  and you receive **no** inbound messages or comments at all. Everything else
+  keeps working, which makes it a quiet failure. The subscription happens once,
+  when the Page is connected, so a Page authorized without that permission has
+  to be **reconnected** after granting it.
+</Warning>

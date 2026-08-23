@@ -1,10 +1,10 @@
 ---
 title: "Publishing"
-description: "Publish content to one or more connected accounts."
+description: "Publish one post to several platforms, now or later."
 ---
 
-Create a post targeting one or more accounts and PlugKit publishes to each,
-returning a per-target result.
+Create a post targeting one or more accounts; PlugKit publishes to each and
+returns a per-target result.
 
 ```bash
 curl -X POST https://api.plugkit.co/v1/posts \
@@ -14,7 +14,7 @@ curl -X POST https://api.plugkit.co/v1/posts \
     "profileId": "YOUR_PROFILE_ID",
     "content": "Launch day 🚀",
     "accountIds": ["ACCOUNT_ID_1", "ACCOUNT_ID_2"],
-    "mediaUrls": ["https://example.com/photo.jpg"],
+    "mediaItems": [{ "type": "image", "url": "https://example.com/photo.jpg" }],
     "publishNow": true
   }'
 ```
@@ -25,34 +25,46 @@ curl -X POST https://api.plugkit.co/v1/posts \
 | --- | --- | --- |
 | `profileId` | ✅ | The profile that owns the target accounts. |
 | `content` | ✅ | Caption / text body. |
-| `accountIds` | ✅ | One or more connected accounts to publish to. |
-| `mediaUrls` | conditional | Public URL(s). Required for video platforms (see below). |
-| `publishNow` | — | `true` to publish immediately. |
-| `scheduledFor` | — | ISO date to schedule instead of publishing now. |
-| `asDraft` | — | TikTok only — lands the video in drafts to finalize in the app. |
+| `accountIds` | ✅* | Target accounts. *Exactly one of `accountIds` or `platforms`. |
+| `platforms` | ✅* | Targets **with per-platform overrides** — see below. |
+| `mediaItems` | conditional | The canonical media shape. Required by the video platforms. |
+| `mediaUrls` | — | Legacy shorthand: bare URLs, type guessed from the extension. Ignored when `mediaItems` is present. |
+| `title` | — | Required by YouTube (100 chars). Ignored by platforms without titles. |
+| `publishNow` | — | Publish immediately. |
+| `scheduledFor` | — | ISO date. See [Scheduling](#scheduling). |
+| `timezone` | — | IANA zone `scheduledFor` is written in. |
+| `privacy` | — | `public`, `unlisted`, `private` — YouTube and TikTok. |
+| `asDraft` | — | TikTok: land in the creator's drafts instead of publishing. |
+| `trialReel`, `trialGraduation`, `shareToFeed` | — | Instagram reels. |
+| `allowComment`, `allowDuet`, `allowStitch` | — | TikTok interaction settings. |
 
-The response includes a per-account `target` with its `status` and the live
-`platformPostUrl` once publishing succeeds.
+The response carries a `target` per account with its `status` and, once live,
+the `platformPostUrl`.
 
-## What each platform expects
+## Media
 
-| Platform | Media | Notes |
-| --- | --- | --- |
-| **Instagram** | image URL | Two-step (container → publish), handled for you. |
-| **TikTok** | public `.mp4` URL | Posts `SELF_ONLY` until review; `asDraft` supported. |
-| **YouTube** | public video URL | Uploads as `private` until the app is verified. |
-| **Telegram** | video URL | Bot must be an admin of the target channel. |
-| **X (Twitter)** | optional | Text only, **or** 1–4 images, **or** one video/GIF. |
+`mediaItems` is the shape to use — it carries the type, the alt text and a
+custom video thumbnail, none of which a bare URL can express:
 
-<Note>
-  Instagram publishing is a two-step process (create a media container, then
-  publish). PlugKit runs both steps for you.
-</Note>
+```json
+"mediaItems": [
+  { "type": "image", "url": "https://…/photo.jpg", "altText": "Our team on stage" },
+  { "type": "video", "url": "https://…/clip.mp4", "thumbnail": "https://…/cover.jpg" }
+]
+```
 
-## Uploading media
+<Warning>
+  Media must be reachable by the platform itself — Instagram and Facebook fetch
+  the file from the URL you give. A link that expires, or one that serves a web
+  page instead of the file (WeTransfer, Drive, Dropbox share links), fails at
+  publish time, not at create time.
+</Warning>
 
-If you don't have a public URL, upload the file first and pass the returned URL
-in `mediaUrls`:
+### Uploading a file
+
+No public URL? Two ways in, depending on size.
+
+**Small files, straight through the API:**
 
 ```bash
 curl -X POST https://api.plugkit.co/v1/media/upload \
@@ -60,13 +72,88 @@ curl -X POST https://api.plugkit.co/v1/media/upload \
   -F "file=@./photo.jpg"
 ```
 
-## Scheduling
+**Anything bigger — a one-shot upload ticket.** Ask for a link, then send the
+bytes to it directly. The file never transits the API, so size is bounded by
+storage rather than by request memory:
 
-Pass `scheduledFor` (ISO 8601) instead of `publishNow` to queue a post:
+```bash
+# 1. get the ticket
+curl -X POST https://api.plugkit.co/v1/media/upload-url \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "filename": "episode-12.mp4" }'
+# → { "uploadUrl": "https://…", "uploadMethod": "PUT", "mediaUrl": "https://…", "expiresAt": "…", "maxBytes": … }
+
+# 2. send the bytes with the method the ticket names
+curl -X PUT --upload-file ./episode-12.mp4 "PASTE_uploadUrl"
+
+# 3. publish with mediaUrl
+```
+
+Use `mediaUrl` (not `uploadUrl`) in `mediaItems`. The ticket is single-use and
+expires.
+
+## Per-platform overrides
+
+One idea rarely fits every network verbatim — 280 characters on X, a vertical
+video on TikTok. `platforms` lets one post carry different content per target,
+with `customContent` and `customMedia` overriding the defaults where they're
+given:
 
 ```json
-{ "profileId": "...", "content": "...", "accountIds": ["..."], "scheduledFor": "2026-01-01T09:00:00Z" }
+{
+  "profileId": "…",
+  "content": "The default text, used where nothing is overridden.",
+  "platforms": [
+    { "accountId": "ACC_IG" },
+    { "accountId": "ACC_X", "customContent": "Shorter, punchier, under 280." },
+    { "accountId": "ACC_TT", "customMedia": [{ "type": "video", "url": "https://…/vertical.mp4" }] }
+  ]
+}
 ```
+
+## What each platform expects
+
+| Platform | Media | Notes |
+| --- | --- | --- |
+| **Instagram** | image or video | Container → publish, handled for you. Reels support trial mode. |
+| **Facebook** | optional | Text-only posts are fine. |
+| **TikTok** | video | `asDraft`, `privacy` and the interaction flags apply. |
+| **YouTube** | video | `title` required; `privacy` maps to the upload's visibility. |
+| **X** | optional | Text only, **or** 1–4 images, **or** one video/GIF. |
+| **Telegram** | optional | The bot must be an admin of the channel. |
+
+WhatsApp doesn't do posts — see [Messaging](/guides/messaging).
+
+## Scheduling
+
+Pass `scheduledFor` instead of `publishNow`:
+
+```json
+{ "profileId": "…", "content": "…", "accountIds": ["…"],
+  "scheduledFor": "2027-01-01T09:00:00", "timezone": "Europe/Paris" }
+```
+
+A date **without** an offset is read in `timezone`. A date carrying its own
+offset (`2027-01-01T09:00:00+01:00`) is absolute and `timezone` is ignored.
+
+Publish a scheduled post early, or retry one that failed:
+
+```bash
+curl -X POST https://api.plugkit.co/v1/posts/POST_ID/publish \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+It returns immediately and publishes in the background. Targets that already
+published are skipped, so a retry never double-posts.
+
+## When a target fails
+
+A post to three accounts where one fails comes back `partial`, not `failed` —
+and the failing target carries its own error. The others are live; the fix is to
+retry that one target, which the `publish` call above does.
+
+Subscribe to `post.published`, `post.partial` and `post.failed` to hear about it
+without polling — see [Webhooks](/guides/webhooks).
 
 <Card title="See all fields" icon="code" href="/api-reference">
   Open `POST /v1/posts` in the API Reference to try it live.

@@ -1,61 +1,104 @@
 ---
 title: "Messaging"
-description: "Read conversations and send replies (Instagram, WhatsApp, Telegram)."
+description: "One inbox across Instagram, Facebook, WhatsApp and Telegram."
 ---
 
-PlugKit exposes a connected account's inbox as **conversations** and
-**messages**, the same shape across Instagram, WhatsApp and Telegram.
+Every messaging account's inbox is exposed as **conversations** and
+**messages**, in the same shape whatever the platform underneath.
+
+<Note>
+  Paths live under `/v1/inbox/conversations`. The older `/v1/conversations`
+  paths still serve the exact same responses — nothing to migrate.
+</Note>
+
+## List conversations
+
+```bash
+curl "https://api.plugkit.co/v1/inbox/conversations?accountId=ACCOUNT_ID" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+Each row carries the contact, the account, the platform, the last message and
+whether it's unread.
+
+## Read a conversation
+
+```bash
+curl https://api.plugkit.co/v1/inbox/conversations/CONVERSATION_ID/messages \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+Mark it read once your user has seen it:
+
+```bash
+curl -X POST https://api.plugkit.co/v1/inbox/conversations/CONVERSATION_ID/read \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+## Reply
+
+```bash
+curl -X POST https://api.plugkit.co/v1/inbox/conversations/CONVERSATION_ID/messages \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "text": "Thanks for reaching out! 👋" }'
+```
+
+Sending is immediate and public to the recipient — there's no undo. Show the
+exact text to whoever is approving it before you call this.
+
+## Start a conversation
+
+```bash
+curl -X POST https://api.plugkit.co/v1/inbox/conversations \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "accountId": "ACCOUNT_ID", "contactHandle": "33612345678",
+        "externalConversationId": "33612345678" }'
+```
+
+The identifier depends on the platform: a phone number in international format
+on WhatsApp, an IGSID on Instagram, a chat id on Telegram.
+
+There's also a direct path that bypasses the inbox entirely, when you hold the
+platform id and don't need the thread:
+
+```bash
+curl -X POST https://api.plugkit.co/v1/accounts/ACCOUNT_ID/messages/send \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "recipientId": "178414…", "text": "Hi there!" }'
+```
+
+## The 24-hour window
+
+Meta — Instagram, Facebook Messenger and WhatsApp — only accepts free-form
+messages within **24 hours of the contact's last message**. Past that:
+
+- **WhatsApp**: send an approved [template](/platforms/whatsapp#the-24-hour-window).
+- **Instagram / Facebook**: the window is closed. The single exception is a
+  private reply to a comment, once per comment, within 7 days — which is what
+  [comment → DM automations](/guides/campaigns) run on.
+
+Telegram has no such limit.
 
 ## Sync from the platform
 
-Inbound messages arrive via webhooks, but you can also pull the current state
-from the platform's live API — handy on first connection or if you don't run
-webhooks:
+Inbound messages arrive by [webhook](/guides/webhooks) in real time. When the
+inbox looks incomplete — a freshly connected account, or webhooks that were
+misconfigured for a while — pull the current state from the platform:
 
 ```bash
-curl -X POST "https://api.plugkit.co/v1/conversations/sync?accountId=ACCOUNT_ID" \
+curl -X POST "https://api.plugkit.co/v1/inbox/conversations/sync?accountId=ACCOUNT_ID" \
   -H "Authorization: Bearer sk_your_key"
 ```
 
 Returns how many conversations and messages were synced.
 
-## List conversations
+## Reacting to inbound messages
 
-```bash
-curl "https://api.plugkit.co/v1/conversations?accountId=ACCOUNT_ID" \
-  -H "Authorization: Bearer sk_your_key"
-```
+Subscribe to `message.received` rather than polling the list. The payload
+carries the conversation and the message, so you can route it straight into your
+own system — see [Webhooks](/guides/webhooks).
 
-## Read a conversation
-
-```bash
-curl https://api.plugkit.co/v1/conversations/CONVERSATION_ID/messages \
-  -H "Authorization: Bearer sk_your_key"
-```
-
-## Send a reply
-
-```bash
-curl -X POST https://api.plugkit.co/v1/conversations/CONVERSATION_ID/messages \
-  -H "Authorization: Bearer sk_your_key" \
-  -H "Content-Type: application/json" \
-  -d '{ "text": "Thanks for reaching out! 👋" }'
-```
-
-## Send a direct DM (Instagram, no existing conversation)
-
-Message an Instagram user by their IGSID without an existing thread:
-
-```bash
-curl -X POST https://api.plugkit.co/v1/accounts/ACCOUNT_ID/messages/send \
-  -H "Authorization: Bearer sk_your_key" \
-  -H "Content-Type: application/json" \
-  -d '{ "recipientId": "178414...", "text": "Hi there!" }'
-```
-
-<Note>
-  New inbound messages are delivered in real time via webhooks — see
-  [Webhooks](/guides/webhooks). Instagram messaging requires the
-  `instagram_business_manage_messages` permission, and (per Meta's rule) the user
-  must have messaged you within the last 24h unless you use an approved template.
-</Note>
+<Warning>
+  X DMs need elevated paid API access and aren't exposed. Broadcasts exclude X
+  for the same reason — see [Campaigns](/guides/campaigns).
+</Warning>

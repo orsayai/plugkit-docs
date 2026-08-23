@@ -1,78 +1,126 @@
 ---
 title: "WhatsApp"
-description: "Send and receive WhatsApp messages via the Cloud API."
+description: "Connect a customer's own WhatsApp number and hold two-way conversations."
 icon: "whatsapp"
 ---
 
-WhatsApp is a **messaging-only** integration built on Meta's WhatsApp **Cloud
-API**. No publishing, comments or analytics — it's a two-way conversation channel.
+WhatsApp is a **messaging-only** integration on Meta's WhatsApp Cloud API. No
+posts, no comments, no analytics — a conversation channel.
 
 <CardGroup cols={2}>
-  <Card title="Messaging" icon="comments">Send & receive text messages.</Card>
-  <Card title="Business info" icon="circle-info">Read WABA & phone numbers.</Card>
+  <Card title="Messaging" icon="comments">Send & receive, two ways.</Card>
+  <Card title="Templates" icon="file-lines">Reach people outside the 24h window.</Card>
 </CardGroup>
 
 ## Connect
 
-Unlike the OAuth platforms, WhatsApp connects from **server-side credentials**
-(phone number id, WhatsApp Business Account id, and an access token) configured
-on your PlugKit deployment. One call links them to a profile:
+WhatsApp uses Meta's **Embedded Signup**: your user brings their own number,
+inside a Facebook-hosted flow that also creates or picks their WhatsApp Business
+Account.
 
 ```bash
-curl -X POST "https://api.plugkit.co/v1/connect/whatsapp/from-env?profileId=YOUR_PROFILE_ID" \
+curl "https://api.plugkit.co/v1/connect/whatsapp?profileId=YOUR_PROFILE_ID" \
   -H "Authorization: Bearer sk_your_key"
 ```
 
-<Note>
-  This uses the `WHATSAPP_*` credentials (from Meta → WhatsApp → API Setup) set
-  on the server. It's the fastest path for your own number; per-customer
-  onboarding via Embedded Signup can be added later.
-</Note>
+Open the returned `authUrl`. The user signs in with Facebook, selects or creates
+a WABA, and verifies the phone number. PlugKit stores the number, exchanges a
+long-lived token and subscribes it to webhooks.
+
+<Warning>
+  A **test number** issued by Meta's API Setup screen carries a 24-hour token and
+  will silently stop working the next day. Connect a real number.
+</Warning>
+
+If inbound messages ever stop arriving, re-subscribe the number without
+reconnecting it:
+
+```bash
+curl -X POST https://api.plugkit.co/v1/connect/whatsapp/ACCOUNT_ID/subscribe-webhooks \
+  -H "Authorization: Bearer sk_your_key"
+```
 
 ## Send a message
 
-WhatsApp models a thread as a **conversation**. Create/find one for a recipient,
-then send:
+A thread is a **conversation**. Open (or find) one for a phone number in
+international format, then send into it:
 
 ```bash
-# create or find the conversation for a phone number (international format)
-curl -X POST https://api.plugkit.co/v1/conversations \
+curl -X POST https://api.plugkit.co/v1/inbox/conversations \
   -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
-  -d '{ "accountId": "ACCOUNT_ID", "contactHandle": "33612345678", "externalConversationId": "33612345678" }'
+  -d '{ "accountId": "ACCOUNT_ID", "contactHandle": "33612345678",
+        "externalConversationId": "33612345678" }'
 
-# then send text into it
-curl -X POST https://api.plugkit.co/v1/conversations/CONVERSATION_ID/messages \
+curl -X POST https://api.plugkit.co/v1/inbox/conversations/CONVERSATION_ID/messages \
   -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
   -d '{ "text": "Hello from PlugKit!" }'
 ```
 
-<Warning>
-  Meta's **24-hour window**: you can freely message a user who wrote to you in
-  the last 24h. Outside that window you must send an approved **message
-  template**.
-</Warning>
+## The 24-hour window
 
-## Read the inbox
+Meta accepts free-form text only within **24 hours of the contact's last
+message**. Past that, only an approved **template** goes through — free-form
+text doesn't "mostly work", it is rejected.
 
-Inbound messages arrive via [webhooks](/guides/webhooks). List conversations and
-messages the same way as any platform:
+List what the WABA has had approved:
 
 ```bash
-curl "https://api.plugkit.co/v1/conversations?accountId=ACCOUNT_ID" -H "Authorization: Bearer sk_your_key"
-curl https://api.plugkit.co/v1/conversations/CONVERSATION_ID/messages -H "Authorization: Bearer sk_your_key"
-```
-
-## Business info
-
-Inspect the WhatsApp Business Account and its phone numbers (name, quality
-rating, status):
-
-```bash
-curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/whatsapp-info \
+curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/message-templates \
   -H "Authorization: Bearer sk_your_key"
 ```
 
+Then send it, filling the `{{1}}`, `{{2}}` placeholders in order:
+
+```bash
+curl -X POST https://api.plugkit.co/v1/inbox/conversations/CONVERSATION_ID/messages \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{
+    "template": {
+      "name": "order_update",
+      "language": "fr",
+      "variables": ["Teo", "12345"]
+    }
+  }'
+```
+
+The name and language must match an approved template exactly. `components` is
+the escape hatch for headers and buttons — raw Meta components, passed through.
+
+## Read the inbox
+
+Inbound messages arrive by webhook. List and read them like any platform:
+
+```bash
+curl "https://api.plugkit.co/v1/inbox/conversations?accountId=ACCOUNT_ID" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+See [Messaging](/guides/messaging) for the full inbox, and
+[Campaigns](/guides/campaigns) for broadcasts — which are governed by the same
+24-hour window.
+
+## When it stops working
+
+An account carries `isActive` and `needsReconnection`, plus a
+`disconnectedReason` when we know it — check them before assuming a send failed
+for its own reasons:
+
+```bash
+curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID -H "Authorization: Bearer sk_your_key"
+```
+
+Two WhatsApp-specific traps worth knowing:
+
+- Meta can refuse to serve the phone number while the token is perfectly valid —
+  after a coexistence disconnect on the phone side, for instance. Sends then
+  fail with a Meta error rather than an auth error.
+- Reconnecting the **same** number updates the existing account in place, so
+  conversations and history are kept. If a reconnection ever lands on a second
+  account for the same real number — a different WABA, say — fold it back with
+  `POST /v1/accounts/{id}/replace`, which moves everything onto the account you
+  keep and deletes the other.
+
 ## Permissions
 
-Uses `whatsapp_business_messaging` (send/receive) and
-`whatsapp_business_management` (business info).
+`whatsapp_business_messaging` (send and receive) and
+`whatsapp_business_management` (business account and numbers).

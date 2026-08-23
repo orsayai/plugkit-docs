@@ -1,0 +1,132 @@
+---
+title: "Plans & billing"
+description: "What a plan includes, what extra accounts cost, and how per-call platforms are re-billed."
+---
+
+PlugKit bills on **connected accounts**, plus the handful of platform calls that
+cost real money upstream. Everything else — publishing, inbox, campaigns,
+analytics, webhooks, MCP — is included.
+
+## Plans
+
+| | Creator | Pro |
+| --- | --- | --- |
+| Price | **$29**/month | **$97**/month |
+| Connected accounts included | 5 | 30 |
+| Beyond the quota | not allowed | billed per account |
+
+```bash
+curl https://api.plugkit.co/v1/billing/plans -H "Authorization: Bearer sk_your_key"
+curl https://api.plugkit.co/v1/billing/subscription -H "Authorization: Bearer sk_your_key"
+```
+
+Every account starts on a **7-day trial**. A card is registered up front,
+nothing is charged during it.
+
+### Creator is a hard wall
+
+On Creator, the 6th account isn't billed as an extra — it is **refused**, with a
+`402` naming the limit and pointing at Pro. That's deliberate: silently charging
+someone who connected one account too many is worse than telling them.
+
+### Pro overflows, in graduated bands
+
+Past 30 accounts, extra accounts are billed by band:
+
+| Accounts | Per extra account / month |
+| --- | --- |
+| 31 – 100 | $3.00 |
+| 101 + | $1.50 |
+
+Bands are **graduated**, like tax brackets: each account is billed at the rate
+of the band it falls in, not the whole set at the rate you reached. A flat
+scheme would create a cliff where connecting one more account *lowers* your
+bill — and anyone would connect a dummy account to save money.
+
+## Pay-per-call platforms
+
+Some platforms bill per API call. PlugKit passes those through **at cost**, in
+US dollars, with no markup and no currency conversion:
+
+| Operation | Price |
+| --- | --- |
+| Read a post or a lookup | $0.005 |
+| Read a user, follows | $0.010 |
+| Publish a post | $0.015 |
+| Publish a post containing a URL | $0.200 |
+| Read a DM | $0.010 |
+| Send a DM | $0.015 |
+
+Today this applies to **X** only. The mechanism is general — any platform that
+starts billing per call joins the same table.
+
+### Nothing runs until you say so
+
+Background work on a metered account is off by default. Two independent
+switches, per account:
+
+```bash
+curl -X PATCH https://api.plugkit.co/v1/accounts/ACCOUNT_ID/x-billing \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "analytics": true, "inboxSync": false }'
+```
+
+Until they're on, nothing polls and the account costs nothing. It isn't the call
+you asked for that blows up an invoice — it's the loop running while nobody's
+watching.
+
+### Spend cap
+
+```bash
+curl -X POST https://api.plugkit.co/v1/billing/spend-cap \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "capUsd": 20 }'
+```
+
+At 80% you get a warning. At 100%, background polling stops — but **publishing
+and sending are never blocked**. Failing a scheduled post to save half a cent
+does far more damage than a small overshoot: someone planned that message.
+
+Send `"capUsd": null` to remove the cap.
+
+## Watching the spend
+
+```bash
+curl https://api.plugkit.co/v1/usage -H "Authorization: Bearer sk_your_key"
+```
+
+```json Response (trimmed)
+{
+  "period": "2026-08",
+  "currency": "usd",
+  "total_usd": 3.41,
+  "cap_usd": 20,
+  "remaining_usd": 16.59,
+  "breakdown": [
+    { "operation": "X_POST_WITH_URL", "quantity": 12, "cost_usd": 2.4 },
+    { "operation": "X_READ", "quantity": 202, "cost_usd": 1.01 }
+  ]
+}
+```
+
+Responses that engaged a billable call also carry the cost in an
+`x-plugkit-cost-usd` header.
+
+<Note>
+  This endpoint exists because PlugKit's main interface is an agent. A cost that
+  only shows up on the invoice is a cost nobody could weigh at the moment it was
+  incurred — an assistant can read this before starting a loop, and stop when
+  little budget is left.
+</Note>
+
+## Changing plan
+
+```bash
+curl -X POST https://api.plugkit.co/v1/billing/checkout \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "plan": "PRO" }'
+```
+
+Returns a Whop checkout URL. Subscriptions and payments are handled by Whop; the
+variable part (extra accounts, per-call usage) is charged at the end of the
+month against the payment method on file.

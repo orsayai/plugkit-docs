@@ -10,6 +10,8 @@ Posting API.
 <CardGroup cols={2}>
   <Card title="Publish video" icon="video">Post a public MP4.</Card>
   <Card title="Drafts" icon="pen">Send to drafts to finish in-app.</Card>
+  <Card title="Analytics" icon="chart-line">Views, likes, comments, shares.</Card>
+  <Card title="Interactions" icon="sliders">Comments, Duet and Stitch settings.</Card>
 </CardGroup>
 
 ## Connect
@@ -45,17 +47,49 @@ posting — the user finalizes and publishes it from their phone:
   "mediaUrls": ["https://…/video.mp4"], "asDraft": true }
 ```
 
+### Visibility and interactions
+
+`privacy` maps onto TikTok's privacy level, and three flags control what others
+may do with the video:
+
+```json
+{ "profileId": "…", "accountIds": ["…"], "content": "…",
+  "mediaItems": [{ "type": "video", "url": "https://…/video.mp4" }],
+  "privacy": "public",
+  "allowComment": true, "allowDuet": true, "allowStitch": false }
+```
+
+<Note>
+  TikTok has no `unlisted`: both `unlisted` and `private` publish as
+  `SELF_ONLY`. And a creator's own account settings win — if they've disabled
+  Duets, `allowDuet: true` doesn't override it.
+</Note>
+
+## Analytics
+
+TikTok feeds the [analytics store](/guides/analytics): views, likes, comments
+and shares per video, plus follower count measured daily. Videos published
+straight from the TikTok app are picked up too.
+
 <Warning>
-  Until your TikTok app passes review, videos publish as **`SELF_ONLY`**
-  (visible only to the posting account). This is a TikTok requirement, not a
-  PlugKit limit — the `asDraft` flow is the recommended path pre-review.
+  This needs the `video.list` and `user.info.stats` scopes, which are **not
+  retroactive**. An account connected before they were added keeps publishing
+  fine but returns no analytics at all — reconnect it to fix that. Empty charts,
+  no error.
 </Warning>
+
+<Note>
+  TikTok has no daily history of its own: metrics are read as running totals and
+  PlugKit records the series itself, from the day you connect.
+</Note>
 
 ## Not supported
 
-TikTok's API doesn't expose messaging, comments or account analytics to
-third-party apps, so those aren't available here.
+TikTok's API doesn't expose messaging or comments to third-party apps.
 
 ## Permissions
 
-Scopes: `user.info.basic`, `video.publish`, `video.upload`.
+Scopes: `user.info.basic`, `video.publish`, `video.upload`, `video.list`,
+`user.info.stats`. The last two are for analytics and must also be enabled in
+your TikTok developer portal — otherwise the authorization goes out without
+them, silently.

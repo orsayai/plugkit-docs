@@ -20,25 +20,39 @@
         "groups": [
           {
             "group": "Get started",
-            "pages": ["index", "quickstart", "authentication"]
+            "pages": [
+              "index",
+              "quickstart",
+              "authentication"
+            ]
           },
           {
             "group": "Core concepts",
-            "pages": ["concepts/profiles-and-accounts"]
+            "pages": [
+              "concepts/profiles-and-accounts",
+              "concepts/analytics-collection",
+              "concepts/billing"
+            ]
           },
           {
             "group": "MCP",
-            "pages": ["mcp/overview", "mcp/clients", "mcp/tools"]
+            "pages": [
+              "mcp/overview",
+              "mcp/clients",
+              "mcp/tools"
+            ]
           },
           {
             "group": "Platforms",
             "pages": [
               "platforms/instagram",
-              "platforms/whatsapp",
+              "platforms/facebook",
               "platforms/tiktok",
               "platforms/youtube",
               "platforms/x",
-              "platforms/telegram"
+              "platforms/whatsapp",
+              "platforms/telegram",
+              "platforms/meta-ads"
             ]
           },
           {
@@ -46,6 +60,7 @@
             "pages": [
               "guides/publishing",
               "guides/messaging",
+              "guides/campaigns",
               "guides/analytics",
               "guides/webhooks"
             ]
@@ -60,7 +75,10 @@
   },
   "navbar": {
     "links": [
-      { "label": "Dashboard", "href": "https://plugkit.co/dashboard" }
+      {
+        "label": "Dashboard",
+        "href": "https://plugkit.co/dashboard"
+      }
     ],
     "primary": {
       "type": "button",

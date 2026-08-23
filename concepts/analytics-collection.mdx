@@ -1,0 +1,129 @@
+---
+title: "How analytics are collected"
+description: "Cadences, freshness, history depth, and what each platform actually exposes."
+---
+
+Analytics don't come from the platform when you ask — they come from PlugKit's
+own store, filled by a background collector. This page is the contract: how
+fresh the numbers are, how far back they go, and what each platform can and
+can't answer.
+
+## Why a store and not a live call
+
+Three of the four screens people actually want are impossible to answer live:
+
+- **Follower history.** No platform returns the follower count you had last
+  Tuesday. If nobody measured it that day, it's gone for good.
+- **Engagement accumulation.** "Half the engagement arrives in the first 6
+  hours" requires the same post measured repeatedly as it ages.
+- **Comparison to the previous period.** Needs both periods on hand.
+
+The fourth — a leaderboard across every account — is technically possible live,
+but costs one call per account per platform and takes seconds. It's one indexed
+query here.
+
+## Cadence
+
+The collector refreshes a post more often when its numbers are still moving, and
+backs off as it settles:
+
+| Pass | Creator / trial | Pro |
+| --- | --- | --- |
+| Discover new posts on an account | every 6h | every 90 min |
+| Posts under 48h old | hourly | every 30 min |
+| Posts under 30 days | every 6h | hourly |
+| Posts over 30 days | weekly | weekly |
+| Follower count | daily | daily |
+
+Two consequences worth knowing:
+
+- **A post older than 180 days is frozen.** Its last reading stays on record and
+  is never refreshed again. Engagement on a six-month-old post doesn't move, and
+  re-reading your whole archive forever would be the one thing that makes this
+  system grow without bound.
+- **A post the platform no longer knows** — deleted, or turned private — is
+  frozen on its last reading rather than erased. Your history stays intact.
+
+The plan changes the **freshness** of the numbers, never the access. Every
+endpoint, every metric and every account is available on every plan, including
+during the trial.
+
+## Freshness, and saying it out loud
+
+Every analytics response carries `lastSyncAt` and `nextSyncAt`. Show them.
+
+A number without its reading time looks like real time, and the first time it
+disagrees with the platform's own app — which it will, because the two were read
+at different moments — it reads as a bug rather than a sync cycle that hasn't
+run yet.
+
+On top of PlugKit's own cadence, the platforms add their own lag: Instagram
+insights settle over roughly 24 hours, and a view counted at minute one is not
+final at minute two anywhere.
+
+## History depth
+
+| Plan | Readable history |
+| --- | --- |
+| Creator / trial | 90 days |
+| Pro | 550 days (18 months) |
+
+This bounds the **read**, not the collection. Data keeps being recorded either
+way, so moving to Pro reveals a past that was already there — retroactively. A
+request that reaches further back than your plan allows isn't rejected: it is
+clamped, and the response says so.
+
+```json
+"window": { "from": "…", "to": "…", "maxHistoryDays": 90, "clamped": true }
+```
+
+## What each platform exposes
+
+| | Post metrics | Followers | Discovers external posts |
+| --- | --- | :---: | :---: |
+| **Instagram** | views, reach, likes, comments, shares, saves | ✅ | ✅ |
+| **Facebook** | impressions, reach, clicks, likes, comments, shares | ✅ | ✅ |
+| **TikTok** | views, likes, comments, shares | ✅ | ✅ |
+| **YouTube** | views, likes, comments | ✅ | ✅ |
+| **X** | likes, replies, reposts, impressions | ✅ | — |
+
+WhatsApp and Telegram have no posts, so they have no analytics.
+
+A few platform truths that shape what you'll see:
+
+- **Instagram** retired `impressions` for media in favour of `views`. Old posts
+  may carry one and not the other.
+- **TikTok** requires the `video.list` and `user.info.stats` scopes. They are
+  **not retroactive**: an account connected before those scopes were added has
+  no analytics until it reconnects. Everything else about it keeps working, so
+  the symptom is empty charts, not an error.
+- **YouTube** returns totals since publication, not a day-by-day series. The
+  daily breakdown lives in the YouTube Analytics API, which requires a separate
+  Google audit.
+- **X** is metered per read. See below.
+
+## X, and anything else that bills per call
+
+X charges for every API read, so it plays by different rules:
+
+- Nothing is polled until **`xAnalyticsEnabled`** is set on the account
+  (`PATCH /v1/accounts/{id}/x-billing`).
+- Once enabled, a post is refreshed **at most once a day**, whatever the plan
+  and whatever its age. The hourly hot window doesn't apply.
+- Posts are not discovered on X — only what you published through PlugKit is
+  tracked. Listing a timeline costs a billed read per page, forever, to find
+  posts you already know about.
+- When your [spend cap](/concepts/billing) is reached, background collection
+  stops silently. It isn't an error — it's the limit you set. Publishing is
+  never blocked by it.
+
+<Note>
+  This is a general mechanism, not an X special case. Any platform that starts
+  billing per read gets the same treatment: opt-in, once a day, under the cap.
+</Note>
+
+## Turning it off
+
+Collection can be stopped entirely on a deployment with
+`ANALYTICS_ENABLED=false`. Scheduled posts keep going out — the two loops are
+separate on purpose.

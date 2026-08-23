@@ -13,14 +13,19 @@ platform yourself. Same request shape everywhere, no per-API quirks.
 Each platform has its own capabilities and connection flow — see its page for
 the specifics.
 
-| Platform | Publish | Messaging | Comments | Analytics |
-| --- | :---: | :---: | :---: | :---: |
-| [**Instagram**](/platforms/instagram) | ✅ | ✅ | ✅ | ✅ |
-| [**WhatsApp**](/platforms/whatsapp) | — | ✅ | — | — |
-| [**TikTok**](/platforms/tiktok) | ✅ | — | — | — |
-| [**YouTube**](/platforms/youtube) | ✅ | — | — | — |
-| [**X (Twitter)**](/platforms/x) | ✅ | — | — | ✅ |
-| [**Telegram**](/platforms/telegram) | ✅ | ✅ | — | — |
+| Platform | Publish | Messaging | Comments | Analytics | Ads |
+| --- | :---: | :---: | :---: | :---: | :---: |
+| [**Instagram**](/platforms/instagram) | ✅ | ✅ | ✅ | ✅ | — |
+| [**Facebook**](/platforms/facebook) | ✅ | ✅ | ✅ | ✅ | — |
+| [**TikTok**](/platforms/tiktok) | ✅ | — | — | ✅ | — |
+| [**YouTube**](/platforms/youtube) | ✅ | — | — | ✅ | — |
+| [**X (Twitter)**](/platforms/x) | ✅ | — | — | ✅¹ | — |
+| [**WhatsApp**](/platforms/whatsapp) | — | ✅ | — | — | — |
+| [**Telegram**](/platforms/telegram) | ✅ | ✅ | — | — | — |
+| [**Meta Ads**](/platforms/meta-ads) | — | — | — | — | ✅ |
+
+<sup>1</sup> X bills every API read, so its analytics are opt-in and capped —
+see [Plans & billing](/concepts/billing).
 
 <CardGroup cols={2}>
   <Card title="Quickstart" icon="rocket" href="/quickstart">
@@ -34,6 +39,13 @@ the specifics.
   </Card>
   <Card title="MCP server" icon="robot" href="/mcp/overview">
     Connect Claude, Cursor or VS Code to your accounts in one click.
+  </Card>
+  <Card title="Analytics" icon="chart-line" href="/guides/analytics">
+    Cross-platform metrics, collected in the background — including posts you
+    published outside PlugKit.
+  </Card>
+  <Card title="Campaigns" icon="bullhorn" href="/guides/campaigns">
+    Comment → DM automations, broadcasts and follow-up sequences.
   </Card>
   <Card title="API Reference" icon="code" href="/api-reference">
     Every endpoint, with a live playground to try them.

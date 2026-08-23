@@ -1,0 +1,139 @@
+---
+title: "Meta Ads"
+description: "Run Facebook and Instagram campaigns — campaigns, ad sets, ads, boosts and insights."
+icon: "meta"
+---
+
+A `meta_ads` account is an **ad account**, not a social network. It publishes
+nothing and receives no messages. What it holds is campaigns — and the ability
+to promote a Page post you already published.
+
+<CardGroup cols={2}>
+  <Card title="Campaigns" icon="layer-group">Campaign → ad set → ad.</Card>
+  <Card title="Boost" icon="rocket">Promote an existing Page post in one call.</Card>
+  <Card title="Insights" icon="chart-column">Spend and performance at every level.</Card>
+  <Card title="Audiences" icon="users">Meta targeting specs, passed through.</Card>
+</CardGroup>
+
+## Connect
+
+Same Facebook Login screen as [Pages](/platforms/facebook) — one authorization
+can grant both:
+
+```bash
+curl "https://api.plugkit.co/v1/connect/meta_ads?profileId=YOUR_PROFILE_ID" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+Each ad account the user grants becomes its own PlugKit account.
+
+```bash Check what you're spending against
+curl https://api.plugkit.co/v1/ads/ACCOUNT_ID/account -H "Authorization: Bearer sk_your_key"
+```
+
+Returns the currency, status and lifetime spend. Read it before your first
+create — **every budget below is expressed in that currency**.
+
+## Two rules that will bite you otherwise
+
+<Warning>
+  **Budgets are in minor units.** `2000` is €20.00, not €2000. Meta expects
+  cents (or the currency's smallest unit) everywhere: `dailyBudget`,
+  `lifetimeBudget`, `bidAmount`.
+</Warning>
+
+<Warning>
+  **Everything is created `PAUSED`.** Campaigns, ad sets and ads all start
+  paused, and boosts too. Set `status: "ACTIVE"` only after an explicit go on
+  the amount and the audience — that call starts spending real money.
+</Warning>
+
+## Boost a post
+
+The short path: take a Page post that's already live and promote it. PlugKit
+creates the campaign, the ad set and the ad in one call.
+
+```bash
+curl -X POST https://api.plugkit.co/v1/ads/AD_ACCOUNT_ID/boost \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{
+    "postId": "123456789_987654321",
+    "dailyBudget": 2000,
+    "days": 7,
+    "countries": ["FR", "BE"],
+    "ageMin": 25,
+    "ageMax": 45
+  }'
+```
+
+`postId` is the Page post id, in `{page-id}_{post-id}` form — it's the
+`platformPostId` returned when you published through PlugKit.
+
+## The full hierarchy
+
+```bash Campaign
+curl -X POST https://api.plugkit.co/v1/ads/AD_ACCOUNT_ID/campaigns \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "name": "Spring launch", "objective": "OUTCOME_ENGAGEMENT", "dailyBudget": 5000 }'
+```
+
+Objectives: `OUTCOME_AWARENESS`, `OUTCOME_TRAFFIC`, `OUTCOME_ENGAGEMENT`,
+`OUTCOME_LEADS`, `OUTCOME_APP_PROMOTION`, `OUTCOME_SALES`.
+
+```bash Ad set — audience, budget, schedule
+curl -X POST https://api.plugkit.co/v1/ads/AD_ACCOUNT_ID/adsets \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{
+    "name": "FR 25-45",
+    "campaignId": "CAMPAIGN_ID",
+    "dailyBudget": 2000,
+    "optimizationGoal": "POST_ENGAGEMENT",
+    "billingEvent": "IMPRESSIONS",
+    "targeting": { "geo_locations": { "countries": ["FR"] }, "age_min": 25, "age_max": 45 }
+  }'
+```
+
+`targeting` and `promotedObject` are Meta specs, passed through unchanged — so
+anything Meta's own docs describe works here. Omit `targeting` and it defaults
+to France.
+
+```bash Ad — from an existing Page post
+curl -X POST https://api.plugkit.co/v1/ads/AD_ACCOUNT_ID/ads \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "name": "Launch video", "adSetId": "ADSET_ID", "objectStoryId": "123456789_987654321" }'
+```
+
+Give either `objectStoryId` (an existing Page post) or `creativeId` (an existing
+ad creative).
+
+Set the budget **either** on the campaign (campaign budget optimisation, Meta
+splits it) **or** on the ad sets — not both.
+
+## Pause, resume, rebudget
+
+`PATCH` works the same on all three levels:
+
+```bash
+curl -X PATCH https://api.plugkit.co/v1/ads/AD_ACCOUNT_ID/campaigns/CAMPAIGN_ID \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "status": "PAUSED" }'
+```
+
+## Insights
+
+Spend and performance, for the whole account or one object:
+
+```bash
+curl "https://api.plugkit.co/v1/ads/AD_ACCOUNT_ID/insights?campaignId=CAMPAIGN_ID&since=2026-08-01&until=2026-08-23" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+<Note>
+  These are **ad** metrics — spend, impressions, CPC — and they're separate from
+  the organic [analytics store](/guides/analytics), which measures posts.
+</Note>
+
+## Permissions
+
+`ads_management`, `ads_read`, `business_management`, plus the Page permissions
+when you boost a Page post.

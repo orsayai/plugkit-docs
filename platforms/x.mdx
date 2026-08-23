@@ -40,28 +40,48 @@ The response includes the tweet's `platformPostId` and `platformPostUrl`.
 
 ## Analytics
 
-Account-level metrics (the six the X API exposes):
+X feeds the [analytics store](/guides/analytics) like the other platforms —
+likes, replies, reposts and impressions per post — with two differences that
+follow from X billing every API read.
+
+<Warning>
+  **Nothing is polled until you opt in.** Background analytics on an X account
+  are off by default, per account:
+
+  ```bash
+  curl -X PATCH https://api.plugkit.co/v1/accounts/ACCOUNT_ID/x-billing \
+    -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+    -d '{ "analytics": true }'
+  ```
+</Warning>
+
+Once enabled:
+
+- A post is refreshed **at most once a day**, whatever your plan. The hourly
+  window other platforms get would cost $0.005 per post per hour.
+- **Only posts published through PlugKit are tracked.** Listing your timeline to
+  discover the others would be a billed read per page, forever, to find posts we
+  already know about.
+- Collection stops when your [spend cap](/concepts/billing) is reached.
+  Publishing never does.
+
+Set a cap before turning this on:
 
 ```bash
-curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/x-analytics -H "Authorization: Bearer sk_your_key"
+curl -X POST https://api.plugkit.co/v1/billing/spend-cap \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "capUsd": 20 }'
 ```
 
-Per-tweet metrics (likes, retweets, replies, quotes, impressions, bookmarks) —
-the tweet id is the number ending its URL, or the `platformPostId` from
-publishing:
+## Pricing
 
-```bash
-curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/x-tweets/TWEET_ID -H "Authorization: Bearer sk_your_key"
-```
-
-<Note>
-  Detailed impression/engagement data lives at the **tweet** level, not the
-  account level — an X API limitation, not PlugKit's.
-</Note>
+X calls are re-billed at cost — $0.005 a read, $0.015 a post, and **$0.200 for
+a post containing a URL** (X's own pricing, roughly 13× a normal post). Watch it
+with `GET /v1/usage`; see [Plans & billing](/concepts/billing).
 
 ## Not supported
 
-X messaging (DMs) isn't exposed through this integration.
+X DMs need elevated paid API access, so messaging isn't exposed here.
 
 ## Permissions
 

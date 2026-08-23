@@ -50,8 +50,8 @@ Users who message your bot show up as **conversations**. Read and reply like any
 platform:
 
 ```bash
-curl "https://api.plugkit.co/v1/conversations?accountId=ACCOUNT_ID" -H "Authorization: Bearer sk_your_key"
-curl -X POST https://api.plugkit.co/v1/conversations/CONVERSATION_ID/messages \
+curl "https://api.plugkit.co/v1/inbox/conversations?accountId=ACCOUNT_ID" -H "Authorization: Bearer sk_your_key"
+curl -X POST https://api.plugkit.co/v1/inbox/conversations/CONVERSATION_ID/messages \
   -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" -d '{ "text": "Hi! 👋" }'
 ```
 

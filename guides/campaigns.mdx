@@ -1,0 +1,164 @@
+---
+title: "Campaigns"
+description: "Turn comments into DMs, broadcast to your inbox, and follow up on a schedule."
+---
+
+Three ways to send messages without writing each one: an automation that reacts
+to comments, a broadcast that goes to many contacts at once, and a sequence that
+follows up over days.
+
+All three run on PlugKit's own workers, so they keep going when your process
+isn't running.
+
+<CardGroup cols={3}>
+  <Card title="Comment → DM" icon="comment-dots">
+    Someone comments a keyword, they get a private message.
+  </Card>
+  <Card title="Broadcasts" icon="bullhorn">
+    One message to a filtered slice of your inbox.
+  </Card>
+  <Card title="Sequences" icon="list-check">
+    Timed follow-ups that stop when they reply.
+  </Card>
+</CardGroup>
+
+## Comment → DM
+
+The classic "comment LINK and I'll send it to you". PlugKit watches the posts
+you name, matches the keyword, and sends the DM.
+
+```bash
+curl -X POST https://api.plugkit.co/v1/comment-automations \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{
+    "accountId": "ACCOUNT_ID",
+    "name": "Guide launch",
+    "mediaIds": ["17912…"],
+    "keywords": ["guide", "GUIDE"],
+    "matchType": "contains",
+    "dmText": "Here it is 👇",
+    "dmButtonLabel": "Get the guide",
+    "dmButtonUrl": "https://example.com/guide",
+    "publicReplyText": "Just sent it 🙌",
+    "oncePerUser": true
+  }'
+```
+
+| Field | Notes |
+| --- | --- |
+| `mediaIds` | Posts to watch. **Empty means every post on the account, including ones published later.** |
+| `keywords` | Case- and accent-insensitive. Required unless `matchType` is `any`. |
+| `matchType` | `contains`, `exact`, or `any` (every comment triggers). |
+| `publicReplyText` | Optional public reply under the comment, so others see it worked. |
+| `oncePerUser` | At most one DM per person for this automation. |
+
+<Warning>
+  Meta allows **one private reply per comment, within 7 days**. It's the only
+  way to message someone who has never written to you — and it doesn't come
+  back. A second automation matching the same comment finds the door closed.
+</Warning>
+
+Instagram and Facebook Pages only — no other platform exposes private replies.
+Check what actually fired with `GET /v1/comment-automations/{id}/runs`.
+
+## Broadcasts
+
+One message to many conversations. Preview the audience before you commit:
+
+```bash
+curl "https://api.plugkit.co/v1/broadcasts/audience?accountId=ACCOUNT_ID&activeWithinDays=1" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+```bash Create and schedule
+curl -X POST https://api.plugkit.co/v1/broadcasts \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{
+    "accountId": "ACCOUNT_ID",
+    "name": "Friday drop",
+    "text": "New episode is live 🎧",
+    "audience": { "activeWithinDays": 1 },
+    "scheduledFor": "2026-08-29T17:00:00",
+    "timezone": "Europe/Paris"
+  }'
+```
+
+Then `POST /v1/broadcasts/{id}/send` to queue it, or let the schedule fire.
+`POST /v1/broadcasts/{id}/cancel` puts a scheduled broadcast back to draft.
+
+### The 24-hour window governs everything
+
+Meta refuses an unlabelled message more than 24 hours after the contact's last
+one. That's why `activeWithinDays: 1` is the default audience: it is the slice
+that will actually be delivered.
+
+You can widen it, and PlugKit will try. Failures then land **per recipient**, in
+the delivery log, rather than failing the whole broadcast:
+
+```bash
+curl https://api.plugkit.co/v1/broadcasts/BROADCAST_ID/recipients \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+Telegram has no such window. WhatsApp has approved templates for it — see
+[WhatsApp](/platforms/whatsapp).
+
+### The audience is frozen at send time
+
+Recipients are resolved once, when sending starts, and written down. A
+conversation that arrives mid-send isn't silently added, and a retry after a
+partial failure doesn't message the people who already got it twice.
+
+<Note>
+  Broadcasts run on Instagram, Facebook, WhatsApp and Telegram. **X is
+  deliberately excluded**: its DMs are billed per call, and a 500-recipient
+  broadcast would build an invoice nobody approved.
+</Note>
+
+## Sequences
+
+A series of messages sent over time, to whoever enters. Steps carry their own
+delay, counted from the previous one:
+
+```bash
+curl -X POST https://api.plugkit.co/v1/sequences \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{
+    "accountId": "ACCOUNT_ID",
+    "name": "Story lead magnet",
+    "trigger": "story_reply",
+    "keywords": ["info"],
+    "matchType": "contains",
+    "stopOnReply": true,
+    "steps": [
+      { "delayMinutes": 0,    "text": "Here is the link 👉 example.com" },
+      { "delayMinutes": 1440, "text": "Did you get a chance to look?" },
+      { "delayMinutes": 4320, "text": "Last nudge — any questions?" }
+    ]
+  }'
+```
+
+| Trigger | Who enters |
+| --- | --- |
+| `conversation_started` | Anyone who opens a new conversation with the account. |
+| `comment_automation` | People a comment → DM automation just messaged (pass `automationId`). |
+| `story_reply` | People who reply to one of the account's stories — filtered by `keywords`. |
+| `manual` | Only who you enrol with `POST /v1/sequences/{id}/enroll`. |
+
+`stopOnReply: true` drops someone out the moment they answer. Leave it on unless
+you have a reason: a human reply that keeps getting followed up by a robot is
+the fastest way to lose the conversation you just won.
+
+Follow who's in and where with `GET /v1/sequences/{id}/enrollments`.
+
+<Note>
+  Sequence steps obey the same 24-hour window. A step that comes due outside it
+  is recorded as failed for that person, with the reason, and the sequence moves
+  on rather than stalling.
+</Note>
+
+## Events
+
+Subscribe to [webhooks](/guides/webhooks) to know what happened:
+`comment.dm_sent` when an automation fires, `broadcast.finished` when a send
+completes.

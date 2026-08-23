@@ -1,6 +1,6 @@
 ---
 title: "Tools & workflows"
-description: "The 37 tools and 3 ready-made workflows exposed by the PlugKit MCP server."
+description: "The 77 tools and 3 ready-made workflows exposed by the PlugKit MCP server."
 ---
 
 Every tool maps to the REST API you already know — same vocabulary, same ids.
@@ -28,12 +28,12 @@ Tools marked **write** are hidden entirely from a session granted `mcp:read`.
 | --- | --- | --- |
 | `list_accounts` | read | Connected accounts, filterable by profile, platform or status. |
 | `get_account` | read | One account (the platform token is never exposed). |
-| `get_connect_url` | write | Generate the OAuth link to attach an Instagram, TikTok, YouTube or X account. The assistant hands it to you — it can't follow it itself. |
+| `get_connect_url` | write | Generate the OAuth link for any platform. The assistant hands it to you — it can't follow it itself. |
 | `connect_telegram` | write | Attach a Telegram bot from its BotFather token (validated before storage). |
-| `connect_whatsapp` | write | Attach the WhatsApp Business number configured on the server. |
 | `connect_account_manually` | write | Attach an account from credentials you already hold. Advanced. |
 | `disconnect_account` | write | Disconnect and wipe the token. Posts and conversations are kept. |
-| `subscribe_instagram_webhooks` | write | Subscribe an Instagram account to Meta webhooks so DMs arrive in real time. |
+| `subscribe_instagram_webhooks` | write | Re-subscribe an Instagram account to Meta webhooks so DMs arrive in real time. |
+| `list_message_templates` | read | WhatsApp templates the business has had approved — the only thing that sends past the 24h window. |
 
 ## Posts
 
@@ -45,7 +45,8 @@ Tools marked **write** are hidden entirely from a session granted `mcp:read`.
 | `update_post` | write | Edit or reschedule a draft/scheduled post. Published posts are frozen. |
 | `publish_post` | write | Publish now: a draft, a scheduled post brought forward, or a retry (already-published targets are skipped, so no duplicates). |
 | `delete_post` | write | Delete on PlugKit and cancel the schedule. Does not unpublish what's already live. |
-| `upload_media` | write | Re-host a media file on the PlugKit domain and return the URL. Required for TikTok. |
+| `upload_media` | write | Re-host a file from a URL you already have, and return the PlugKit URL. |
+| `create_media_upload` | write | Get a one-shot upload link so the assistant can send the bytes itself — any size, no third-party file host. |
 
 <Info>
   WhatsApp and Telegram don't do posts — only messages. `whoami` returns the
@@ -56,7 +57,7 @@ Tools marked **write** are hidden entirely from a session granted `mcp:read`.
 
 | Tool | | What it does |
 | --- | --- | --- |
-| `list_conversations` | read | The unified inbox across Instagram, WhatsApp and Telegram. |
+| `list_conversations` | read | The unified inbox across Instagram, Facebook, WhatsApp and Telegram. |
 | `get_conversation` | read | One conversation (contact, account, platform). |
 | `list_messages` | read | History of a conversation with direction and delivery status. |
 | `list_instagram_threads` | read | Raw Instagram threads with participant IGSIDs — to find a contact the inbox doesn't know yet. |
@@ -65,15 +66,91 @@ Tools marked **write** are hidden entirely from a session granted `mcp:read`.
 | `sync_conversations` | write | Pull conversations and messages from the platform API when the inbox looks stale. |
 | `send_direct_message` | write | Send straight to a platform identifier, bypassing the inbox. Fallback path. |
 
-## Comments & analytics
+## Analytics
+
+Reads the collected store — history, comparisons, every account at once, no
+platform call. See [Analytics](/guides/analytics).
 
 | Tool | | What it does |
 | --- | --- | --- |
-| `get_account_analytics` | read | Followers, following, post count, and reach where the platform exposes it. |
+| `get_analytics_summary` | read | Headline numbers over a window, each with its change vs the previous period. Start here. |
+| `get_top_posts` | read | Posts ranked by any metric, including ones published outside PlugKit. |
+| `get_analytics_timeseries` | read | One metric by day, week or month, optionally split by platform. |
+| `get_best_times_to_post` | read | Weekday × hour engagement grid — feed it into `scheduledFor` instead of guessing. |
+| `get_follower_stats` | read | Follower history and growth per account. |
+| `sync_analytics` | write | Pull an account's latest posts now instead of waiting for the cycle. Debounced 15s. |
+
+## Comments & live reads
+
+| Tool | | What it does |
+| --- | --- | --- |
+| `get_account_analytics` | read | Live account read: followers, following, post count, reach where exposed. One object, billed on X. |
 | `get_account_media` | read | Recent posts on the account with their metrics and `mediaId`. |
-| `get_post_analytics` | read | Likes, comments, shares and impressions for one published post. |
+| `get_post_analytics` | read | Live read of one published post. |
 | `get_comments` | read | Comments on a published post. |
 | `reply_to_comment` | write | Reply publicly — threaded on a `commentId`, or on the post itself. |
+
+<Note>
+  `get_*_analytics` query the platform **live**: current value, one object, and
+  a real cost on metered platforms. For anything a dashboard would show — a
+  ranking, a trend, a comparison — the `get_analytics_*` tools above answer in
+  one call and cost nothing.
+</Note>
+
+## Campaigns
+
+| Tool | | What it does |
+| --- | --- | --- |
+| `create_comment_automation` | write | "Comment a keyword, get a DM" on one post or every post of the account. |
+| `list_comment_automations` | read | Automations with their status and counters. |
+| `update_comment_automation` | write | Change keywords, message, button, or pause it. |
+| `delete_comment_automation` | write | Remove an automation. |
+| `get_comment_automation_runs` | read | Trigger log — who commented what, and what was sent. |
+| `preview_broadcast_audience` | read | Count the recipients an audience would reach, **before** sending. |
+| `create_broadcast` | write | Draft or schedule one message to a filtered slice of the inbox. |
+| `list_broadcasts` | read | Broadcasts with status and counts. |
+| `send_broadcast` | write | Queue it for sending. Immediate and irreversible for every recipient. |
+| `cancel_broadcast` | write | Put a scheduled broadcast back to draft. |
+| `delete_broadcast` | write | Delete a broadcast. |
+| `get_broadcast_recipients` | read | Per-recipient delivery log, with the reason for each failure. |
+| `create_sequence` | write | Timed follow-ups, triggered by a new conversation, a comment automation, or a story reply. |
+| `list_sequences` | read | Sequences with their steps and status. |
+| `update_sequence` | write | Edit steps, trigger or status. |
+| `delete_sequence` | write | Remove a sequence. |
+| `enroll_in_sequence` | write | Put a conversation into a sequence by hand. |
+| `get_sequence_enrollments` | read | Who is in it, and at which step. |
+
+## Ads (Meta)
+
+| Tool | | What it does |
+| --- | --- | --- |
+| `get_ad_account` | read | Currency, status and spend of the ad account. Read it before creating anything. |
+| `list_campaigns` / `list_ad_sets` / `list_ads` | read | The hierarchy, at each level. |
+| `create_campaign` | write | Create a campaign. **Paused** unless told otherwise. |
+| `create_ad_set` | write | Audience, budget and schedule. Budgets in minor units (2000 = €20.00). |
+| `create_ad` | write | An ad from an existing creative or an existing Page post. |
+| `update_campaign` / `update_ad_set` / `update_ad` | write | Rename, pause, resume, rebudget. |
+| `boost_post` | write | Promote a published Page post — campaign, ad set and ad in one call. |
+| `get_ads_insights` | read | Spend and performance for the account, a campaign, an ad set or an ad. |
+
+<Warning>
+  Everything is created **paused**, and budgets are in minor units. Setting
+  `status: "ACTIVE"` starts spending real money — the assistant should confirm
+  the amount and the audience with you first.
+</Warning>
+
+## Billing
+
+| Tool | | What it does |
+| --- | --- | --- |
+| `get_subscription` | read | Plan, account quota, and current X spend. |
+| `get_usage` | read | Pay-per-call spend for the month, broken down by operation. |
+| `set_x_billing` | write | Turn X background analytics and inbox sync on or off, per account. |
+
+<Note>
+  `get_usage` exists so an assistant can weigh a cost **before** starting a
+  loop, instead of discovering it on the invoice.
+</Note>
 
 ## API keys
 

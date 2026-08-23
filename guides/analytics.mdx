@@ -1,80 +1,225 @@
 ---
 title: "Analytics"
-description: "Pull account and post metrics for Instagram and X."
+description: "Cross-platform metrics for every post you publish — and every post you didn't."
 ---
 
-PlugKit exposes read-only metrics for the platforms that support them.
+PlugKit collects metrics in the background and serves them from its own store.
+That means one request answers for **every connected account at once**, over any
+window, sorted however you like — instead of one call per account per platform,
+each with a different shape.
 
-## Instagram insights
+It also means the numbers have an age. Every response carries `lastSyncAt` and
+`nextSyncAt` so you can show it; see [How collection
+works](/concepts/analytics-collection) for the cadence.
 
-Account-level insights (followers, reach, impressions, profile views) plus
-public profile info:
+<Note>
+  Analytics are included on every plan and every account, from the trial
+  onwards. Nothing here is gated.
+</Note>
+
+## Summary
+
+The headline numbers over a window, each with its change against the previous
+period of the same length:
 
 ```bash
-curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/insights \
+curl "https://api.plugkit.co/v1/analytics/summary?from=2026-07-24" \
   -H "Authorization: Bearer sk_your_key"
 ```
 
-```json Response (shape)
+```json Response (trimmed)
 {
-  "profile": { "followers_count": 1234, "media_count": 87, "biography": "…" },
-  "metrics": [
-    { "name": "impressions", "values": [{ "value": 4200 }] },
-    { "name": "reach", "values": [{ "value": 3100 }] }
+  "window": { "from": "2026-07-24T…", "to": "2026-08-23T…", "maxHistoryDays": 90, "clamped": false },
+  "posts": { "value": 194, "change": 54.0 },
+  "engagementRate": { "value": 6.8, "change": 0.5 },
+  "metrics": {
+    "reach":       { "value": 662700, "change": 64.0 },
+    "likes":       { "value": 23100,  "change": 15.4 },
+    "impressions": { "value": 1310000, "change": 29.4 },
+    "clicks":      { "value": null,   "change": null }
+  },
+  "followers": { "total": 726600, "change": 1970 },
+  "bestPost": { "id": "sp_…", "platform": "instagram", "engagement": 4120, "permalink": "https://…" },
+  "lastSyncAt": "2026-08-23T14:31:00.000Z",
+  "nextSyncAt": "2026-08-23T15:19:00.000Z"
+}
+```
+
+<Warning>
+  `null` is not zero. A `null` metric means the platform doesn't expose it for
+  that account — TikTok has no reach, YouTube has no impressions. Rendering it
+  as `0` skews every average you compute downstream.
+</Warning>
+
+Changes follow the unit of what they measure: a **volume** changes in percent,
+a **rate** changes in points. `engagementRate.change: 0.5` means half a point
+(6.3% → 6.8%), not half a percent.
+
+## Posts
+
+Every post with its metrics, sorted by whichever one matters:
+
+```bash
+curl "https://api.plugkit.co/v1/analytics/posts?sortBy=engagement&limit=10" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+| Parameter | Values |
+| --- | --- |
+| `platform` | `instagram`, `facebook`, `tiktok`, `youtube`, `x` |
+| `profileId` / `accountId` | Narrow to one profile or one account |
+| `source` | `all` (default), `plugkit`, `external` |
+| `from` / `to` | ISO dates. Defaults to the last 30 days |
+| `sortBy` | `date`, `engagement`, `likes`, `comments`, `shares`, `saves`, `views`, `impressions`, `reach`, `clicks` |
+| `order` | `asc`, `desc` (default) |
+| `page` / `limit` | Up to 100 per page |
+
+### Posts you didn't publish through PlugKit
+
+The collector mirrors what each platform lists, so a post published straight
+from the Instagram app shows up here too, marked `source: "external"`. That's
+what makes the numbers match the platform's own dashboard on day one, instead
+of only counting what has gone through the API since you connected.
+
+Use `source=plugkit` when you specifically want to measure your own automation.
+
+## Over time
+
+One metric, bucketed by day, week or month, optionally split by platform — the
+shape a stacked chart wants:
+
+```bash
+curl "https://api.plugkit.co/v1/analytics/timeseries?metric=likes&granularity=week&byPlatform=true" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+```json Response (trimmed)
+{
+  "metric": "likes",
+  "granularity": "week",
+  "series": [
+    { "date": "2026-08-03T00:00:00.000Z", "platform": "instagram", "total": 5200 },
+    { "date": "2026-08-03T00:00:00.000Z", "platform": "tiktok",    "total": 2400 }
   ]
 }
 ```
 
-Requires the `instagram_business_manage_insights` permission on the connected
-account.
+Posts are grouped by **publication date**, and their current metrics summed:
+"likes for the week of the 3rd" means "likes earned by the posts published that
+week". That's the reading that tells you what to publish next.
 
-## X (Twitter) account analytics
+## Platform breakdown
 
-The six account metrics the X API exposes (followers, following, tweets, lists,
-likes given, media):
+One row per network over the window — posts, every metric, and the engagement
+rate:
 
 ```bash
-curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/x-analytics \
+curl "https://api.plugkit.co/v1/analytics/platforms" \
   -H "Authorization: Bearer sk_your_key"
 ```
 
-## X tweet analytics
+## Best time to post
 
-Per-tweet metrics (likes, retweets, replies, quotes, impressions, bookmarks).
-The tweet id is the number at the end of the tweet URL, or the `platformPostId`
-returned when you published it:
+Average engagement per weekday and hour, read in the timezone you ask for:
 
 ```bash
-curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/x-tweets/TWEET_ID \
+curl "https://api.plugkit.co/v1/analytics/best-times?timezone=Europe/Paris" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+```json Response (trimmed)
+{
+  "timezone": "Europe/Paris",
+  "cells": [
+    { "weekday": 4, "hour": 20, "posts": 7, "averageEngagement": 1580 },
+    { "weekday": 6, "hour": 3,  "posts": 1, "averageEngagement": 4200 }
+  ]
+}
+```
+
+`weekday` is `0` for Sunday, following Postgres. **Always pass a timezone** — an
+hour-of-day grid read in UTC is off by your users' whole offset, and it fails
+silently, because every cell still has a plausible number in it.
+
+Check `posts` before acting on a cell. The second row above has the best average
+of the set and is worth nothing: one post is a coincidence, not a slot.
+
+## Engagement accumulation
+
+How fast a post earns its final engagement, by age bucket — the answer to "is it
+still worth watching, or is it done?":
+
+```bash
+curl "https://api.plugkit.co/v1/analytics/accumulation" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+```json Response (trimmed)
+{
+  "buckets": [
+    { "bucket": "6h",  "samples": 40, "share": 48.9 },
+    { "bucket": "24h", "samples": 36, "share": 76.5 },
+    { "bucket": "7d",  "samples": 25, "share": 94.0 }
+  ]
+}
+```
+
+`share` is the percentage of final engagement already earned at that age,
+averaged over the posts in the window. It fills in as your posts age — a brand
+new account only has the early buckets.
+
+## Followers
+
+Follower count over time, per account, with growth:
+
+```bash
+curl "https://api.plugkit.co/v1/analytics/followers?granularity=day" \
   -H "Authorization: Bearer sk_your_key"
 ```
 
 <Note>
-  Detailed impression/engagement data on X lives at the **tweet** level, not the
-  account level — that's an X API limitation, not PlugKit's.
+  The series starts the day the account was connected. No platform hands back
+  the follower history it didn't record — it can only be measured forward, one
+  day at a time. Connect early.
 </Note>
 
-## Instagram media & comments
+## Refresh on demand
 
-List recent posts, then read or reply to their comments:
+Someone just published from the platform's own app and wants to see it now:
 
-```bash List recent media
-curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/media \
-  -H "Authorization: Bearer sk_your_key"
-```
-
-```bash Comments on a post
-curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/media/MEDIA_ID/comments \
-  -H "Authorization: Bearer sk_your_key"
-```
-
-```bash Reply to a comment
-curl -X POST https://api.plugkit.co/v1/accounts/ACCOUNT_ID/comments/COMMENT_ID/reply \
+```bash
+curl -X POST https://api.plugkit.co/v1/analytics/sync \
   -H "Authorization: Bearer sk_your_key" \
   -H "Content-Type: application/json" \
-  -d '{ "message": "Thanks! 🙏" }'
+  -d '{ "accountId": "ACCOUNT_ID" }'
 ```
 
-<Card title="Try it live" icon="code" href="/api-reference">
-  Every analytics endpoint is in the API Reference playground.
-</Card>
+With an `accountId`, the platform is queried within the request. Without one,
+every account of the caller is moved to the front of the queue and picked up on
+the next cycle.
+
+Calls within 15 seconds of each other on the same account are ignored — a
+dashboard that refreshes on focus can't turn into a burst of platform calls.
+
+## Live reads
+
+The endpoints above never touch a platform. When you want the value *right now*
+for one object — and are willing to pay for it on metered platforms — two
+pass-through reads remain:
+
+```bash
+curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/analytics -H "Authorization: Bearer sk_your_key"
+curl https://api.plugkit.co/v1/accounts/ACCOUNT_ID/media/MEDIA_ID/analytics -H "Authorization: Bearer sk_your_key"
+```
+
+They return one object, no history and no comparison, and each one is billed on
+X. Prefer `/v1/analytics/*` for anything you'd put in a dashboard.
+
+<CardGroup cols={2}>
+  <Card title="How collection works" icon="rotate" href="/concepts/analytics-collection">
+    Cadences, freshness, history depth, and what each platform actually exposes.
+  </Card>
+  <Card title="Try it live" icon="code" href="/api-reference">
+    Every analytics endpoint in the playground.
+  </Card>
+</CardGroup>

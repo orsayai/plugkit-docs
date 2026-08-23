@@ -64,9 +64,9 @@ curl "https://api.plugkit.co/v1/connect/instagram?profileId=YOUR_PROFILE_ID" \
 ```
 
 You get back an `authUrl` — open it in a browser, approve, and the account is
-created. All six platforms are covered in
-[Connecting accounts](/concepts/profiles-and-accounts). You can also do this in two
-clicks from the dashboard's **Connections** page.
+created. Every platform has its own page under **Platforms**, and the shared
+model is in [Profiles & accounts](/concepts/profiles-and-accounts). You can also
+do this in two clicks from the dashboard's **Connections** page.
 
 ## 5. Publish
 
@@ -81,6 +81,16 @@ curl -X POST https://api.plugkit.co/v1/posts \
     "mediaUrls": ["https://example.com/photo.jpg"],
     "publishNow": true
   }'
+```
+
+## 6. Read the results
+
+Metrics are collected in the background, so one call covers every account you
+connected:
+
+```bash
+curl "https://api.plugkit.co/v1/analytics/summary" \
+  -H "Authorization: Bearer sk_your_key"
 ```
 
 <CardGroup cols={2}>

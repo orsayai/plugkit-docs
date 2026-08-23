@@ -10,6 +10,9 @@ PlugKit has two ways in, both resolving to **your account**:
   never handle a token yourself.
 - **API key** — for your own code. A Bearer key sent on every request. Create and
   manage keys from the dashboard's **API Keys** section.
+- **OAuth** — how an MCP client connects. The assistant is granted access
+  through a consent screen instead of holding a key of yours, and you can revoke
+  it from **Settings → Connected apps**. See the [MCP server](/mcp/overview).
 
 Everything is scoped per account: a key only ever sees the profiles, accounts,
 posts and conversations that belong to the user who created it.
@@ -59,7 +62,9 @@ manager, never in client-side code or a git repo.
 | ------ | ------- |
 | `401 Unauthorized` | Missing, malformed, expired, or revoked credential. |
 | `403 Forbidden` | Authenticated but not allowed for this resource. |
+| `402 Payment Required` | The plan's account quota is reached, or a spend cap blocks a billable call — see [Plans & billing](/concepts/billing). |
 | `404 Not Found` | The resource doesn't exist **or** isn't owned by your account. |
+| `429 Too Many Requests` | Rate limited. Back off and retry. |
 
 <Note>
   `404` is intentionally returned instead of `403` when you request a resource

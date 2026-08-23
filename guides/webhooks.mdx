@@ -1,39 +1,151 @@
 ---
 title: "Webhooks"
-description: "Receive messages and comments in real time."
+description: "Get told when a post goes live, a message arrives, or an account drops."
 ---
 
-PlugKit receives platform events (new messages, comments) at a single webhook
-endpoint and processes them for the matching connected account.
+Register an HTTPS endpoint and PlugKit posts an event to it when something
+happens — no polling.
 
-## Endpoint
+## Create an endpoint
+
+```bash
+curl -X POST https://api.plugkit.co/v1/webhooks \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-app.com/hooks/plugkit",
+    "events": ["post.published", "message.received"]
+  }'
+```
+
+Omit `events` (or send an empty list) to receive everything, including events
+added later.
+
+<Warning>
+  The response contains the signing secret (`whsec_…`) **once**. Store it now —
+  it is never shown again, and you need it to verify deliveries.
+</Warning>
+
+## Events
+
+| Event | Fired when |
+| --- | --- |
+| `post.published` | The post is live on every one of its targets. |
+| `post.partial` | Some targets published, others failed. |
+| `post.failed` | No target published. |
+| `message.received` | An inbound message landed in the inbox. |
+| `comment.received` | A comment arrived on one of the account's posts. |
+| `comment.dm_sent` | A [comment → DM automation](/guides/campaigns) sent its private message. |
+| `broadcast.finished` | A broadcast finished serving every recipient. |
+| `account.disconnected` | An account was disconnected, or its token died. |
+
+The list is closed and names are `object.past_tense`. New events are added over
+time; existing ones are never renamed.
+
+## Payload
+
+Every delivery shares one envelope:
+
+```json
+{
+  "id": "evt_9f2c…",
+  "type": "post.published",
+  "createdAt": "2026-08-23T14:31:02.184Z",
+  "data": { }
+}
+```
+
+`data` carries the resource in the same shape the REST API returns it, so the
+post in `post.published` is the post you'd get from `GET /v1/posts/{id}`.
+
+## Verifying a delivery
+
+Each request carries an `x-plugkit-signature` header:
 
 ```
-https://api.plugkit.co/v1/webhooks/instagram
+x-plugkit-signature: t=1756045862,v1=6f3b…
 ```
 
-- **Verification** — Meta sends a `GET` with `hub.challenge`; PlugKit validates
-  the verify token and echoes the challenge.
-- **Events** — Meta sends `POST` requests with the event payload, which PlugKit
-  routes to the right account and conversation.
+`v1` is the HMAC-SHA256 of `<t>.<raw body>`, keyed with your endpoint secret.
+Compute it over the **raw** body — parsing and re-serialising the JSON changes
+the bytes and breaks the comparison.
 
-## Configure in the Meta App Dashboard
+<CodeGroup>
 
-<Steps>
-  <Step title="Set the callback URL">
-    In your Meta app → Instagram → Webhooks, set the callback URL to
-    `https://api.plugkit.co/v1/webhooks/instagram` and enter your verify token.
-  </Step>
-  <Step title="Verify">
-    Click **Verify and save**. Meta calls the endpoint and PlugKit responds to
-    the challenge automatically.
-  </Step>
-  <Step title="Subscribe to fields">
-    Subscribe to the fields you need (e.g. `messages`, `comments`).
-  </Step>
-</Steps>
+```ts TypeScript
+import { createHmac, timingSafeEqual } from "crypto";
+
+function verify(rawBody: string, header: string, secret: string): boolean {
+  const parts = Object.fromEntries(
+    header.split(",").map((kv) => kv.split("=") as [string, string]),
+  );
+  const expected = createHmac("sha256", secret)
+    .update(`${parts.t}.${rawBody}`)
+    .digest("hex");
+
+  // Reject anything older than five minutes to blunt replays.
+  if (Math.abs(Date.now() / 1000 - Number(parts.t)) > 300) return false;
+
+  return timingSafeEqual(Buffer.from(expected), Buffer.from(parts.v1));
+}
+```
+
+```python Python
+import hmac, hashlib, time
+
+def verify(raw_body: bytes, header: str, secret: str) -> bool:
+    parts = dict(kv.split("=", 1) for kv in header.split(","))
+    expected = hmac.new(
+        secret.encode(), f"{parts['t']}.".encode() + raw_body, hashlib.sha256
+    ).hexdigest()
+    if abs(time.time() - int(parts["t"])) > 300:
+        return False
+    return hmac.compare_digest(expected, parts["v1"])
+```
+
+</CodeGroup>
+
+## Delivery and retries
+
+Answer `2xx` within **10 seconds**. Anything else — an error status, a timeout,
+a connection refused — is retried up to **6 attempts** with backoff: 30s, 2min,
+8min, 32min, ~2h, then the delivery is marked `FAILED`.
+
+Events are queued and sent by a worker, never inside the request that triggered
+them. A slow endpoint of yours never slows down a publication, and a broken one
+never makes it fail.
+
+Deliveries are **at least once**: a retry after a response you sent late will
+arrive twice. Deduplicate on the payload's `id`.
+
+Inspect what happened:
+
+```bash
+curl https://api.plugkit.co/v1/webhooks/WEBHOOK_ID/deliveries \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+Each row carries the event, the attempt count, the response status and the last
+error.
+
+## Managing endpoints
+
+```bash
+curl https://api.plugkit.co/v1/webhooks -H "Authorization: Bearer sk_your_key"
+
+curl -X PATCH https://api.plugkit.co/v1/webhooks/WEBHOOK_ID \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "enabled": false }'
+
+curl -X DELETE https://api.plugkit.co/v1/webhooks/WEBHOOK_ID \
+  -H "Authorization: Bearer sk_your_key"
+```
 
 <Note>
-  Each connected account is subscribed to your app's webhooks automatically when
-  it completes the [connect flow](/platforms/instagram).
+  These are PlugKit's **outbound** webhooks. The inbound plumbing — subscribing
+  an account to Meta's own webhooks so DMs reach the inbox at all — happens
+  automatically when an account is connected. It can be re-run for Instagram
+  (`POST /v1/connect/instagram/{accountId}/subscribe-webhooks`) and WhatsApp
+  (`POST /v1/connect/whatsapp/{accountId}/subscribe-webhooks`); a Facebook Page
+  subscribes once at connection time, so a Page that missed it has to be
+  reconnected.
 </Note>

@@ -38,9 +38,13 @@ document the exact flow and specifics for each.
 
 | Pattern | Platforms | How |
 | --- | --- | --- |
-| **OAuth redirect** | Instagram, TikTok, YouTube, X | `GET /connect/{platform}?profileId=…` → open the returned `authUrl` → the platform redirects back and PlugKit stores the token |
+| **OAuth redirect** | Instagram, Facebook, TikTok, YouTube, X, Meta Ads | `GET /connect/{platform}?profileId=…` → open the returned `authUrl` → the platform redirects back and PlugKit stores the token |
+| **Embedded Signup** | WhatsApp | `GET /connect/whatsapp?profileId=…` — same shape, but the user brings their own number and WhatsApp Business Account |
 | **Bot token** | Telegram | `POST /connect/telegram` with a token from @BotFather |
-| **Cloud credentials** | WhatsApp | `POST /connect/whatsapp/from-env` |
+
+One authorization can create **several accounts**: a Facebook login granting
+three Pages produces three accounts, and the same screen can grant ad accounts
+too.
 
 ## Managing accounts
 
