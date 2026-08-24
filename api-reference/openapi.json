@@ -2629,6 +2629,781 @@
         ]
       }
     },
+    "/v1/analytics/summary": {
+      "get": {
+        "operationId": "AnalyticsController_summary",
+        "parameters": [
+          {
+            "name": "profileId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to one profile.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to one connected account.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "instagram",
+                "whatsapp",
+                "tiktok",
+                "telegram",
+                "youtube",
+                "x",
+                "facebook",
+                "meta_ads"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "required": false,
+            "in": "query",
+            "description": "Where the post came from. `plugkit` = published through the API, `external` = published natively on the platform. Defaults to all.",
+            "schema": {
+              "enum": [
+                "all",
+                "plugkit",
+                "external"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start of the window (ISO date). Defaults to 30 days ago.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End of the window (ISO date). Defaults to now.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Headline metrics for a window, with change vs the prior period",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
+    "/v1/analytics/posts": {
+      "get": {
+        "operationId": "AnalyticsController_posts",
+        "parameters": [
+          {
+            "name": "profileId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to one profile.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to one connected account.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "instagram",
+                "whatsapp",
+                "tiktok",
+                "telegram",
+                "youtube",
+                "x",
+                "facebook",
+                "meta_ads"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "required": false,
+            "in": "query",
+            "description": "Where the post came from. `plugkit` = published through the API, `external` = published natively on the platform. Defaults to all.",
+            "schema": {
+              "enum": [
+                "all",
+                "plugkit",
+                "external"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start of the window (ISO date). Defaults to 30 days ago.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End of the window (ISO date). Defaults to now.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "date",
+              "enum": [
+                "date",
+                "engagement",
+                "likes",
+                "comments",
+                "shares",
+                "saves",
+                "views",
+                "impressions",
+                "reach",
+                "clicks"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "desc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Post-level analytics (published here or natively on the platform)",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
+    "/v1/analytics/platforms": {
+      "get": {
+        "operationId": "AnalyticsController_platforms",
+        "parameters": [
+          {
+            "name": "profileId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to one profile.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to one connected account.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "instagram",
+                "whatsapp",
+                "tiktok",
+                "telegram",
+                "youtube",
+                "x",
+                "facebook",
+                "meta_ads"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "required": false,
+            "in": "query",
+            "description": "Where the post came from. `plugkit` = published through the API, `external` = published natively on the platform. Defaults to all.",
+            "schema": {
+              "enum": [
+                "all",
+                "plugkit",
+                "external"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start of the window (ISO date). Defaults to 30 days ago.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End of the window (ISO date). Defaults to now.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "One row per platform over the window",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
+    "/v1/analytics/timeseries": {
+      "get": {
+        "operationId": "AnalyticsController_timeseries",
+        "parameters": [
+          {
+            "name": "profileId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to one profile.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to one connected account.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "instagram",
+                "whatsapp",
+                "tiktok",
+                "telegram",
+                "youtube",
+                "x",
+                "facebook",
+                "meta_ads"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "required": false,
+            "in": "query",
+            "description": "Where the post came from. `plugkit` = published through the API, `external` = published natively on the platform. Defaults to all.",
+            "schema": {
+              "enum": [
+                "all",
+                "plugkit",
+                "external"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start of the window (ISO date). Defaults to 30 days ago.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End of the window (ISO date). Defaults to now.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "metric",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "engagement",
+              "enum": [
+                "posts",
+                "engagement",
+                "likes",
+                "comments",
+                "shares",
+                "saves",
+                "views",
+                "impressions",
+                "reach",
+                "clicks"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "granularity",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "week",
+              "enum": [
+                "day",
+                "week",
+                "month"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "byPlatform",
+            "required": false,
+            "in": "query",
+            "description": "Split each bucket by platform (what the stacked charts need). Defaults to false.",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "One metric over time, optionally split by platform",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
+    "/v1/analytics/best-times": {
+      "get": {
+        "operationId": "AnalyticsController_bestTimes",
+        "parameters": [
+          {
+            "name": "profileId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to one profile.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to one connected account.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "instagram",
+                "whatsapp",
+                "tiktok",
+                "telegram",
+                "youtube",
+                "x",
+                "facebook",
+                "meta_ads"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "required": false,
+            "in": "query",
+            "description": "Where the post came from. `plugkit` = published through the API, `external` = published natively on the platform. Defaults to all.",
+            "schema": {
+              "enum": [
+                "all",
+                "plugkit",
+                "external"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start of the window (ISO date). Defaults to 30 days ago.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End of the window (ISO date). Defaults to now.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "timezone",
+            "required": false,
+            "in": "query",
+            "description": "IANA timezone the heatmap is read in (e.g. Europe/Paris). Defaults to UTC — an hour-of-day grid in the wrong timezone is worse than none.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Weekday × hour engagement grid, read in the given timezone",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
+    "/v1/analytics/accumulation": {
+      "get": {
+        "operationId": "AnalyticsController_accumulation",
+        "parameters": [
+          {
+            "name": "profileId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to one profile.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to one connected account.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "instagram",
+                "whatsapp",
+                "tiktok",
+                "telegram",
+                "youtube",
+                "x",
+                "facebook",
+                "meta_ads"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "required": false,
+            "in": "query",
+            "description": "Where the post came from. `plugkit` = published through the API, `external` = published natively on the platform. Defaults to all.",
+            "schema": {
+              "enum": [
+                "all",
+                "plugkit",
+                "external"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start of the window (ISO date). Defaults to 30 days ago.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End of the window (ISO date). Defaults to now.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "How fast engagement accumulates after publishing, by age bucket",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
+    "/v1/analytics/followers": {
+      "get": {
+        "operationId": "AnalyticsController_followers",
+        "parameters": [
+          {
+            "name": "profileId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to one profile.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to one connected account.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "instagram",
+                "whatsapp",
+                "tiktok",
+                "telegram",
+                "youtube",
+                "x",
+                "facebook",
+                "meta_ads"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "required": false,
+            "in": "query",
+            "description": "Where the post came from. `plugkit` = published through the API, `external` = published natively on the platform. Defaults to all.",
+            "schema": {
+              "enum": [
+                "all",
+                "plugkit",
+                "external"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start of the window (ISO date). Defaults to 30 days ago.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End of the window (ISO date). Defaults to now.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "granularity",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "day",
+              "enum": [
+                "day",
+                "week",
+                "month"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Follower history and growth, per account",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
+    "/v1/analytics/sync": {
+      "post": {
+        "operationId": "AnalyticsController_sync",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncAnalyticsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Refresh now instead of waiting for the next cycle (debounced 15s per account)",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
     "/v1/comment-automations": {
       "post": {
         "operationId": "CommentAutomationsController_create",
@@ -3517,781 +4292,6 @@
           "webhooks"
         ]
       }
-    },
-    "/v1/analytics/summary": {
-      "get": {
-        "operationId": "AnalyticsController_summary",
-        "parameters": [
-          {
-            "name": "profileId",
-            "required": false,
-            "in": "query",
-            "description": "Restrict to one profile.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "accountId",
-            "required": false,
-            "in": "query",
-            "description": "Restrict to one connected account.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "platform",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": [
-                "instagram",
-                "whatsapp",
-                "tiktok",
-                "telegram",
-                "youtube",
-                "x",
-                "facebook",
-                "meta_ads"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "source",
-            "required": false,
-            "in": "query",
-            "description": "Where the post came from. `plugkit` = published through the API, `external` = published natively on the platform. Defaults to all.",
-            "schema": {
-              "enum": [
-                "all",
-                "plugkit",
-                "external"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "from",
-            "required": false,
-            "in": "query",
-            "description": "Start of the window (ISO date). Defaults to 30 days ago.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "to",
-            "required": false,
-            "in": "query",
-            "description": "End of the window (ISO date). Defaults to now.",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "Headline metrics for a window, with change vs the prior period",
-        "tags": [
-          "analytics"
-        ]
-      }
-    },
-    "/v1/analytics/posts": {
-      "get": {
-        "operationId": "AnalyticsController_posts",
-        "parameters": [
-          {
-            "name": "profileId",
-            "required": false,
-            "in": "query",
-            "description": "Restrict to one profile.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "accountId",
-            "required": false,
-            "in": "query",
-            "description": "Restrict to one connected account.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "platform",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": [
-                "instagram",
-                "whatsapp",
-                "tiktok",
-                "telegram",
-                "youtube",
-                "x",
-                "facebook",
-                "meta_ads"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "source",
-            "required": false,
-            "in": "query",
-            "description": "Where the post came from. `plugkit` = published through the API, `external` = published natively on the platform. Defaults to all.",
-            "schema": {
-              "enum": [
-                "all",
-                "plugkit",
-                "external"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "from",
-            "required": false,
-            "in": "query",
-            "description": "Start of the window (ISO date). Defaults to 30 days ago.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "to",
-            "required": false,
-            "in": "query",
-            "description": "End of the window (ISO date). Defaults to now.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": "date",
-              "enum": [
-                "date",
-                "engagement",
-                "likes",
-                "comments",
-                "shares",
-                "saves",
-                "views",
-                "impressions",
-                "reach",
-                "clicks"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "order",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": "desc",
-              "enum": [
-                "asc",
-                "desc"
-              ],
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "Post-level analytics (published here or natively on the platform)",
-        "tags": [
-          "analytics"
-        ]
-      }
-    },
-    "/v1/analytics/platforms": {
-      "get": {
-        "operationId": "AnalyticsController_platforms",
-        "parameters": [
-          {
-            "name": "profileId",
-            "required": false,
-            "in": "query",
-            "description": "Restrict to one profile.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "accountId",
-            "required": false,
-            "in": "query",
-            "description": "Restrict to one connected account.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "platform",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": [
-                "instagram",
-                "whatsapp",
-                "tiktok",
-                "telegram",
-                "youtube",
-                "x",
-                "facebook",
-                "meta_ads"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "source",
-            "required": false,
-            "in": "query",
-            "description": "Where the post came from. `plugkit` = published through the API, `external` = published natively on the platform. Defaults to all.",
-            "schema": {
-              "enum": [
-                "all",
-                "plugkit",
-                "external"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "from",
-            "required": false,
-            "in": "query",
-            "description": "Start of the window (ISO date). Defaults to 30 days ago.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "to",
-            "required": false,
-            "in": "query",
-            "description": "End of the window (ISO date). Defaults to now.",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "One row per platform over the window",
-        "tags": [
-          "analytics"
-        ]
-      }
-    },
-    "/v1/analytics/timeseries": {
-      "get": {
-        "operationId": "AnalyticsController_timeseries",
-        "parameters": [
-          {
-            "name": "profileId",
-            "required": false,
-            "in": "query",
-            "description": "Restrict to one profile.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "accountId",
-            "required": false,
-            "in": "query",
-            "description": "Restrict to one connected account.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "platform",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": [
-                "instagram",
-                "whatsapp",
-                "tiktok",
-                "telegram",
-                "youtube",
-                "x",
-                "facebook",
-                "meta_ads"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "source",
-            "required": false,
-            "in": "query",
-            "description": "Where the post came from. `plugkit` = published through the API, `external` = published natively on the platform. Defaults to all.",
-            "schema": {
-              "enum": [
-                "all",
-                "plugkit",
-                "external"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "from",
-            "required": false,
-            "in": "query",
-            "description": "Start of the window (ISO date). Defaults to 30 days ago.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "to",
-            "required": false,
-            "in": "query",
-            "description": "End of the window (ISO date). Defaults to now.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "metric",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": "engagement",
-              "enum": [
-                "posts",
-                "engagement",
-                "likes",
-                "comments",
-                "shares",
-                "saves",
-                "views",
-                "impressions",
-                "reach",
-                "clicks"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "granularity",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": "week",
-              "enum": [
-                "day",
-                "week",
-                "month"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "byPlatform",
-            "required": false,
-            "in": "query",
-            "description": "Split each bucket by platform (what the stacked charts need). Defaults to false.",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "One metric over time, optionally split by platform",
-        "tags": [
-          "analytics"
-        ]
-      }
-    },
-    "/v1/analytics/best-times": {
-      "get": {
-        "operationId": "AnalyticsController_bestTimes",
-        "parameters": [
-          {
-            "name": "profileId",
-            "required": false,
-            "in": "query",
-            "description": "Restrict to one profile.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "accountId",
-            "required": false,
-            "in": "query",
-            "description": "Restrict to one connected account.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "platform",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": [
-                "instagram",
-                "whatsapp",
-                "tiktok",
-                "telegram",
-                "youtube",
-                "x",
-                "facebook",
-                "meta_ads"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "source",
-            "required": false,
-            "in": "query",
-            "description": "Where the post came from. `plugkit` = published through the API, `external` = published natively on the platform. Defaults to all.",
-            "schema": {
-              "enum": [
-                "all",
-                "plugkit",
-                "external"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "from",
-            "required": false,
-            "in": "query",
-            "description": "Start of the window (ISO date). Defaults to 30 days ago.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "to",
-            "required": false,
-            "in": "query",
-            "description": "End of the window (ISO date). Defaults to now.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "timezone",
-            "required": false,
-            "in": "query",
-            "description": "IANA timezone the heatmap is read in (e.g. Europe/Paris). Defaults to UTC — an hour-of-day grid in the wrong timezone is worse than none.",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "Weekday × hour engagement grid, read in the given timezone",
-        "tags": [
-          "analytics"
-        ]
-      }
-    },
-    "/v1/analytics/accumulation": {
-      "get": {
-        "operationId": "AnalyticsController_accumulation",
-        "parameters": [
-          {
-            "name": "profileId",
-            "required": false,
-            "in": "query",
-            "description": "Restrict to one profile.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "accountId",
-            "required": false,
-            "in": "query",
-            "description": "Restrict to one connected account.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "platform",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": [
-                "instagram",
-                "whatsapp",
-                "tiktok",
-                "telegram",
-                "youtube",
-                "x",
-                "facebook",
-                "meta_ads"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "source",
-            "required": false,
-            "in": "query",
-            "description": "Where the post came from. `plugkit` = published through the API, `external` = published natively on the platform. Defaults to all.",
-            "schema": {
-              "enum": [
-                "all",
-                "plugkit",
-                "external"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "from",
-            "required": false,
-            "in": "query",
-            "description": "Start of the window (ISO date). Defaults to 30 days ago.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "to",
-            "required": false,
-            "in": "query",
-            "description": "End of the window (ISO date). Defaults to now.",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "How fast engagement accumulates after publishing, by age bucket",
-        "tags": [
-          "analytics"
-        ]
-      }
-    },
-    "/v1/analytics/followers": {
-      "get": {
-        "operationId": "AnalyticsController_followers",
-        "parameters": [
-          {
-            "name": "profileId",
-            "required": false,
-            "in": "query",
-            "description": "Restrict to one profile.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "accountId",
-            "required": false,
-            "in": "query",
-            "description": "Restrict to one connected account.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "platform",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": [
-                "instagram",
-                "whatsapp",
-                "tiktok",
-                "telegram",
-                "youtube",
-                "x",
-                "facebook",
-                "meta_ads"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "source",
-            "required": false,
-            "in": "query",
-            "description": "Where the post came from. `plugkit` = published through the API, `external` = published natively on the platform. Defaults to all.",
-            "schema": {
-              "enum": [
-                "all",
-                "plugkit",
-                "external"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "from",
-            "required": false,
-            "in": "query",
-            "description": "Start of the window (ISO date). Defaults to 30 days ago.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "to",
-            "required": false,
-            "in": "query",
-            "description": "End of the window (ISO date). Defaults to now.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "granularity",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": "day",
-              "enum": [
-                "day",
-                "week",
-                "month"
-              ],
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "Follower history and growth, per account",
-        "tags": [
-          "analytics"
-        ]
-      }
-    },
-    "/v1/analytics/sync": {
-      "post": {
-        "operationId": "AnalyticsController_sync",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SyncAnalyticsDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "Refresh now instead of waiting for the next cycle (debounced 15s per account)",
-        "tags": [
-          "analytics"
-        ]
-      }
     }
   },
   "info": {
@@ -4337,7 +4337,7 @@
         "properties": {
           "capUsd": {
             "type": "object",
-            "description": "Monthly cap on X pay-per-call spend, in USD. Null removes the cap. At 80% you get a warning; at 100% background analytics and inbox polling pause — publishing keeps working, so a scheduled post is never held back over a fraction of a cent.",
+            "description": "Monthly cap on X pay-per-call spend, in USD. Null falls back to the default cap ($20) — there is no \"unlimited\": to spend more, set a higher number. At 80% you get a warning; at 100% background analytics and inbox polling pause — publishing keeps working, so a scheduled post is never held back over a fraction of a cent.",
             "example": 25
           }
         }
@@ -5074,6 +5074,15 @@
           "text"
         ]
       },
+      "SyncAnalyticsDto": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Account to refresh now. Omitted, every account of the caller is queued for the next cycle."
+          }
+        }
+      },
       "CreateCommentAutomationDto": {
         "type": "object",
         "properties": {
@@ -5484,15 +5493,6 @@
           "enabled": {
             "type": "boolean",
             "description": "Pause deliveries without deleting the endpoint."
-          }
-        }
-      },
-      "SyncAnalyticsDto": {
-        "type": "object",
-        "properties": {
-          "accountId": {
-            "type": "string",
-            "description": "Account to refresh now. Omitted, every account of the caller is queued for the next cycle."
           }
         }
       }

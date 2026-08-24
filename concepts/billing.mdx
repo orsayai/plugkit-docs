@@ -77,17 +77,29 @@ watching.
 
 ### Spend cap
 
+Every account has one **from the start**: **$20 a month**, applied until you set
+your own.
+
 ```bash
 curl -X POST https://api.plugkit.co/v1/billing/spend-cap \
   -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
-  -d '{ "capUsd": 20 }'
+  -d '{ "capUsd": 50 }'
 ```
 
 At 80% you get a warning. At 100%, background polling stops — but **publishing
 and sending are never blocked**. Failing a scheduled post to save half a cent
 does far more damage than a small overshoot: someone planned that message.
 
-Send `"capUsd": null` to remove the cap.
+`GET /v1/billing/subscription` returns the cap in force and `cap_is_default`,
+which tells you whether it's yours or ours.
+
+<Note>
+  There is deliberately **no "unlimited"**. Sending `"capUsd": null` returns you
+  to the default rather than removing the ceiling; to spend more, set a higher
+  number — and that number is still a ceiling. A single X account polled every
+  hour can run to $360 a month, and the only thing standing between a customer
+  and that invoice should not be a checkbox ticked one evening.
+</Note>
 
 ## Watching the spend
 
