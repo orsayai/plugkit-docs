@@ -51,8 +51,12 @@ follow from X billing every API read.
   ```bash
   curl -X PATCH https://api.plugkit.co/v1/accounts/ACCOUNT_ID/x-billing \
     -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
-    -d '{ "analytics": true }'
+    -d '{ "analytics": true, "acknowledgeCost": true }'
   ```
+
+  `acknowledgeCost` is required to turn it on: the call is refused without it,
+  and the refusal carries the rate card so you can show it first. See
+  [Plans & billing](/concepts/billing).
 </Warning>
 
 Once enabled:

@@ -68,12 +68,25 @@ switches, per account:
 ```bash
 curl -X PATCH https://api.plugkit.co/v1/accounts/ACCOUNT_ID/x-billing \
   -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
-  -d '{ "analytics": true, "inboxSync": false }'
+  -d '{ "analytics": true, "acknowledgeCost": true }'
 ```
 
 Until they're on, nothing polls and the account costs nothing. It isn't the call
 you asked for that blows up an invoice — it's the loop running while nobody's
 watching.
+
+**Turning a switch on requires `acknowledgeCost: true`.** Without it the call is
+refused, and the refusal carries the rate card and the cap in force so you can
+show them before asking again. The acceptance is stamped on the account
+(`billing.costAcknowledgedAt`), because "who authorized this, and when" is the
+question that comes up the day an invoice is questioned.
+
+Enabling also checks, right then, that the account **can** be billed — a card
+that has been charged at least once, and a subscription in good standing. You
+find out at the moment you decide, not three days later through empty charts.
+
+Turning a switch **off** requires nothing at all. Stopping a spend is never put
+behind a confirmation.
 
 ### Spend cap
 
@@ -86,7 +99,9 @@ curl -X POST https://api.plugkit.co/v1/billing/spend-cap \
   -d '{ "capUsd": 50 }'
 ```
 
-At 80% you get a warning. At 100%, background polling stops — but **publishing
+At 80% you get a **`usage.threshold_reached` webhook** — once per month, before
+anything stops, carrying what will pause and what will keep running. At 100%,
+background polling stops — but **publishing
 and sending are never blocked**. Failing a scheduled post to save half a cent
 does far more damage than a small overshoot: someone planned that message.
 
