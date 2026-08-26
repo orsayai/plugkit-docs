@@ -13,6 +13,16 @@ Clients that support OAuth (all the ones below) will open a PlugKit consent
 screen the first time they connect; approve it and you're done. There is no key
 to paste unless you want one.
 
+<Warning>
+  **You add the connector yourself — not from a chat with the assistant.** An
+  assistant asked to install its own connector will decline (it can't vouch for
+  what it would be connecting to), and an API key pasted into a conversation
+  connects nothing while staying in the history forever. Every
+  step below is something you click or run; it takes about a minute. The
+  [dashboard](https://plugkit.co/dashboard/mcp) walks through the same steps one
+  client at a time and tells you when the server has seen your assistant connect.
+</Warning>
+
 ## Claude (web, desktop, mobile)
 
 <Steps>
@@ -42,17 +52,17 @@ to paste unless you want one.
 ## Claude Code
 
 ```bash
-claude mcp add -t http plugkit https://api.plugkit.co/mcp
+claude mcp add --transport http --scope user plugkit https://api.plugkit.co/mcp
 ```
 
 Then run `/mcp` inside Claude Code and choose **Authenticate** — it opens the
-PlugKit consent screen in your browser. Add `-s user` to make the server
-available in every project instead of just the current one.
+PlugKit consent screen in your browser. `--scope user` makes the server
+available in every project; drop it to keep PlugKit to the current folder.
 
 With an API key instead of OAuth:
 
 ```bash
-claude mcp add -t http plugkit https://api.plugkit.co/mcp \
+claude mcp add --transport http --scope user plugkit https://api.plugkit.co/mcp \
   --header "Authorization: Bearer sk_your_key"
 ```
 
@@ -161,6 +171,37 @@ const { tools } = await client.listTools();
 ## Troubleshooting
 
 <AccordionGroup>
+  <Accordion title="My assistant says it doesn't know PlugKit, or refuses to install it">
+    Expected, and not a fault on either side: PlugKit is a *custom* connector, so
+    it appears in no assistant's built-in list, and an assistant asked to install
+    its own connector will decline — it has no way to vouch for what it would be
+    connecting to. Follow the steps for your client above; the tools appear on
+    their own once the server is added.
+
+    If it asks you to confirm the service is legitimate before you connect, our
+    only addresses are **plugkit.co**, **api.plugkit.co** and **docs.plugkit.co**.
+    Once connected, this is a useful thing to paste to give it its bearings:
+
+    ```
+    I use PlugKit (https://plugkit.co) to manage my social accounts. Its MCP
+    server is https://api.plugkit.co/mcp and its docs are at
+    https://docs.plugkit.co/mcp/overview. I have already added it as a
+    connector — please use its tools, starting with whoami.
+    ```
+  </Accordion>
+  <Accordion title="Someone gave me an API key — where do I paste it?">
+    Nowhere, for Claude, Claude Code, Cursor and VS Code: they sign in instead,
+    which is both easier and safer. A key is only for an app that can't open a
+    sign-in window, or for your own code — it goes in a config file or an
+    environment variable, never in a chat. A key carries full access and doesn't
+    expire, so if one has been through a conversation, revoke it under **API
+    keys** in the dashboard and create another.
+  </Accordion>
+  <Accordion title="The client asks for a command to run, or an SSE URL">
+    PlugKit is a **remote** server: nothing to install, no `npx` command, no
+    local proxy. Choose the client's HTTP / Streamable HTTP option and give it
+    `https://api.plugkit.co/mcp`. Legacy SSE is not supported.
+  </Accordion>
   <Accordion title="The client says 401 / unauthorized">
     The server is reachable but the token isn't valid. With OAuth, disconnect and
     reconnect the server so it runs the consent flow again. With an API key,
