@@ -227,6 +227,36 @@
         ]
       }
     },
+    "/v1/api-keys/{id}/roll": {
+      "post": {
+        "description": "The stored value is a hash, so an existing key can never be shown again. Rolling it hands back a value you can copy; requests using the old key stop working immediately.",
+        "operationId": "ApiKeysController_roll",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Replace a key with a new one of the same name and revoke the old one (the plaintext value is returned once)",
+        "tags": [
+          "api-keys"
+        ]
+      }
+    },
     "/v1/health": {
       "get": {
         "operationId": "HealthController_check",
