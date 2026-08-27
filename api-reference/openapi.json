@@ -4808,7 +4808,7 @@
           },
           "content": {
             "type": "string",
-            "description": "Text / caption of the post"
+            "description": "Text / caption of the post. REQUIRED, except when `asStory` is set and every target is an Instagram account: an Instagram story has no caption."
           },
           "accountIds": {
             "description": "Target account ids — the short form. Use `platforms` instead to tailor the content per platform. Exactly one of the two is required.",
@@ -4864,6 +4864,11 @@
             "default": false,
             "description": "Instagram only: publish the video as a trial reel — shown to NON-followers only, never to your own followers, until you choose to release it from the Instagram app. Requires a video and an account with at least 1,000 followers. Ignored by the other platforms."
           },
+          "asStory": {
+            "type": "boolean",
+            "default": false,
+            "description": "Instagram only: publish to the STORY instead of the feed. A story lasts 24 hours, carries no caption (`content` is ignored, and may be omitted when every target is an Instagram account) and takes exactly one media — a JPEG image (8 MB max) or an MP4/MOV video of 3 to 60 seconds (100 MB max). Cannot be combined with `trialReel`. Ignored by the other platforms."
+          },
           "trialGraduation": {
             "type": "string",
             "enum": [
@@ -4905,8 +4910,7 @@
           }
         },
         "required": [
-          "profileId",
-          "content"
+          "profileId"
         ]
       },
       "UpdatePostDto": {
@@ -4918,7 +4922,7 @@
           },
           "content": {
             "type": "string",
-            "description": "Text / caption of the post"
+            "description": "Text / caption of the post. An empty string is accepted only together with `asStory: true` — an Instagram story has no caption."
           },
           "mediaItems": {
             "description": "Replaces the media of the post.",
@@ -4967,6 +4971,10 @@
           "trialReel": {
             "type": "boolean",
             "description": "Instagram only: publish the video as a trial reel (see POST /posts)"
+          },
+          "asStory": {
+            "type": "boolean",
+            "description": "Instagram only: publish to the story instead of the feed (see POST /posts)"
           },
           "trialGraduation": {
             "type": "string",

@@ -36,6 +36,7 @@ curl -X POST https://api.plugkit.co/v1/posts \
 | `privacy` | — | `public`, `unlisted`, `private` — YouTube and TikTok. |
 | `asDraft` | — | TikTok: land in the creator's drafts instead of publishing. |
 | `trialReel`, `trialGraduation`, `shareToFeed` | — | Instagram reels. |
+| `asStory` | — | Instagram: publish to the story instead of the feed. See [Stories](#instagram-stories). |
 | `allowComment`, `allowDuet`, `allowStitch` | — | TikTok interaction settings. |
 
 The response carries a `target` per account with its `status` and, once live,
@@ -115,7 +116,7 @@ given:
 
 | Platform | Media | Notes |
 | --- | --- | --- |
-| **Instagram** | image or video | Container → publish, handled for you. Reels support trial mode. |
+| **Instagram** | image or video | Container → publish, handled for you. Reels support trial mode; `asStory` posts to the story. |
 | **Facebook** | optional | Text-only posts are fine. |
 | **TikTok** | video | `asDraft`, `privacy` and the interaction flags apply. |
 | **YouTube** | video | `title` required; `privacy` maps to the upload's visibility. |
@@ -123,6 +124,39 @@ given:
 | **Telegram** | optional | The bot must be an admin of the channel. |
 
 WhatsApp doesn't do posts — see [Messaging](/guides/messaging).
+
+### Instagram stories
+
+Set `asStory: true` and the post goes to the account's story instead of the
+feed. It is the same call, and the same connection — nothing extra to
+authorise.
+
+A story is not a short post, and Instagram is strict about it:
+
+- **It lasts 24 hours**, then it is gone. There is no permanent URL, so the
+  target comes back without a `platformPostUrl`, and the story is left out of
+  Analytics rather than mirrored as a post frozen at zero.
+- **It carries no caption.** Instagram drops the text, so `content` becomes
+  optional when every target of the post is an Instagram account. Keep it when
+  the same post also goes to X or LinkedIn — they still need it.
+- **One media, and only these formats**: a JPEG image (8 MB max), or an MP4/MOV
+  video of 3 to 60 seconds (100 MB max, H.264/HEVC + AAC). A PNG is refused.
+- **No stickers, polls, links or mentions.** Instagram's API publishes the media
+  and nothing else; interactive elements only exist in the app.
+- `asStory` and `trialReel` are mutually exclusive — a trial only means
+  something in the feed.
+
+```json
+{
+  "profileId": "prof_...",
+  "accountIds": ["acc_instagram"],
+  "asStory": true,
+  "mediaItems": [{ "url": "https://cdn.example.com/story.jpg", "type": "image" }]
+}
+```
+
+Stories count towards the same Instagram quota as feed posts (100 API
+publications per rolling 24 hours).
 
 ## Scheduling
 
