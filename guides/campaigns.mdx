@@ -77,6 +77,8 @@ curl -X POST https://api.plugkit.co/v1/broadcasts \
     "accountId": "ACCOUNT_ID",
     "name": "Friday drop",
     "text": "New episode is live 🎧",
+    "buttonLabel": "Listen now",
+    "buttonUrl": "https://example.com/episode",
     "audience": { "activeWithinDays": 1 },
     "scheduledFor": "2026-08-29T17:00:00",
     "timezone": "Europe/Paris"
@@ -131,7 +133,12 @@ curl -X POST https://api.plugkit.co/v1/sequences \
     "matchType": "contains",
     "stopOnReply": true,
     "steps": [
-      { "delayMinutes": 0,    "text": "Here is the link 👉 example.com" },
+      {
+        "delayMinutes": 0,
+        "text": "Here it is 👇",
+        "buttonLabel": "Get the link",
+        "buttonUrl": "https://example.com/guide"
+      },
       { "delayMinutes": 1440, "text": "Did you get a chance to look?" },
       { "delayMinutes": 4320, "text": "Last nudge — any questions?" }
     ]
@@ -156,6 +163,28 @@ Follow who's in and where with `GET /v1/sequences/{id}/enrollments`.
   is recorded as failed for that person, with the reason, and the sequence moves
   on rather than stalling.
 </Note>
+
+## Buttons, not bare links
+
+All three carry a link button: `dmButtonLabel` / `dmButtonUrl` on a comment
+automation, `buttonLabel` / `buttonUrl` on a broadcast and **on each sequence
+step**. Label and URL go together — one without the other is a `400`.
+
+| Where | Fields |
+| --- | --- |
+| `POST /v1/comment-automations` | `dmButtonLabel`, `dmButtonUrl` |
+| `POST /v1/broadcasts` | `buttonLabel`, `buttonUrl` |
+| `POST /v1/sequences` → each entry of `steps` | `buttonLabel`, `buttonUrl` |
+
+Instagram and Facebook render it as a button template, WhatsApp as a CTA,
+Telegram as an inline keyboard. Where the platform refuses it, the URL is
+appended to the text rather than lost.
+
+<Warning>
+  Prefer the button to a link pasted in the message body. A bare link in a DM is
+  what Meta flags — and it's the reason the story lead magnet above sends a
+  button rather than `example.com` in plain text.
+</Warning>
 
 ## Events
 

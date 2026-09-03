@@ -150,6 +150,103 @@
         ]
       }
     },
+    "/v1/workspaces": {
+      "get": {
+        "operationId": "WorkspacesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "List the workspaces you can act in",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/v1/workspaces/members": {
+      "get": {
+        "operationId": "WorkspacesController_members",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "List the people with access to this workspace",
+        "tags": [
+          "workspaces"
+        ]
+      },
+      "post": {
+        "operationId": "WorkspacesController_invite",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Invite someone to this workspace (they get access at their next sign-in with that email)",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/v1/workspaces/members/{id}": {
+      "delete": {
+        "operationId": "WorkspacesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Remove a member, or leave a workspace",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
     "/v1/api-keys": {
       "post": {
         "operationId": "ApiKeysController_create",
@@ -198,35 +295,6 @@
         ]
       }
     },
-    "/v1/api-keys/{id}": {
-      "delete": {
-        "operationId": "ApiKeysController_revoke",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "Revoke an API key",
-        "tags": [
-          "api-keys"
-        ]
-      }
-    },
     "/v1/api-keys/{id}/roll": {
       "post": {
         "description": "The stored value is a hash, so an existing key can never be shown again. Rolling it hands back a value you can copy; requests using the old key stop working immediately.",
@@ -257,6 +325,35 @@
         ]
       }
     },
+    "/v1/api-keys/{id}": {
+      "delete": {
+        "operationId": "ApiKeysController_revoke",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Revoke an API key",
+        "tags": [
+          "api-keys"
+        ]
+      }
+    },
     "/v1/health": {
       "get": {
         "operationId": "HealthController_check",
@@ -269,6 +366,21 @@
         "summary": "Check that the API responds (unauthenticated)",
         "tags": [
           "health"
+        ]
+      }
+    },
+    "/v1/platforms/maintenance": {
+      "get": {
+        "operationId": "PlatformsController_maintenance",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Platforms temporarily closed to new connections, and why",
+        "tags": [
+          "platforms"
         ]
       }
     },
@@ -489,7 +601,8 @@
                 "youtube",
                 "x",
                 "facebook",
-                "meta_ads"
+                "meta_ads",
+                "linkedin"
               ],
               "type": "string"
             }
@@ -672,6 +785,35 @@
           }
         ],
         "summary": "Account analytics (unified shape + raw platform payload)",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/v1/accounts/{id}/publish-options": {
+      "get": {
+        "operationId": "AccountsController_getPublishOptions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "What the platform requires the creator to choose before publishing (TikTok: nickname, allowed privacy levels, interaction settings)",
         "tags": [
           "accounts"
         ]
@@ -1543,6 +1685,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "coexistence",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1646,6 +1796,36 @@
         ]
       }
     },
+    "/v1/connect/facebook/{accountId}/subscribe-webhooks": {
+      "post": {
+        "description": "Applies the current field list — including message_echoes, which surfaces replies written from the Meta inbox — to a Page connected before those fields existed. No re-authorization needed.",
+        "operationId": "ConnectController_subscribeFacebookWebhooks",
+        "parameters": [
+          {
+            "name": "accountId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Re-subscribe a Facebook Page to its webhook fields (subscribed_apps)",
+        "tags": [
+          "connect"
+        ]
+      }
+    },
     "/v1/connect/whatsapp/{accountId}/subscribe-webhooks": {
       "post": {
         "operationId": "ConnectController_subscribeWhatsAppWebhooks",
@@ -1692,6 +1872,560 @@
         "summary": "Connect a Telegram bot with its @BotFather token",
         "tags": [
           "connect"
+        ]
+      }
+    },
+    "/v1/inbox/conversations": {
+      "post": {
+        "operationId": "MessagesController_createConversation[0]",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConversationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Start (or fetch) a conversation",
+        "tags": [
+          "inbox"
+        ]
+      },
+      "get": {
+        "operationId": "MessagesController_findAll[0]",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "instagram",
+                "whatsapp",
+                "tiktok",
+                "telegram",
+                "youtube",
+                "x",
+                "facebook",
+                "meta_ads",
+                "linkedin"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "List conversations",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/v1/conversations": {
+      "post": {
+        "operationId": "MessagesController_createConversation[1]",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConversationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Start (or fetch) a conversation",
+        "tags": [
+          "inbox"
+        ]
+      },
+      "get": {
+        "operationId": "MessagesController_findAll[1]",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "instagram",
+                "whatsapp",
+                "tiktok",
+                "telegram",
+                "youtube",
+                "x",
+                "facebook",
+                "meta_ads",
+                "linkedin"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "List conversations",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/v1/inbox/conversations/sync": {
+      "post": {
+        "description": "Runs a bounded pass immediately (most recent threads and messages) and, the first time, starts a background backfill of the full history. `backfilling: true` means more conversations will keep landing in the inbox for the next few minutes — poll this list to see them arrive.",
+        "operationId": "MessagesController_sync[0]",
+        "parameters": [
+          {
+            "name": "accountId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Sync conversations from the platform (live API)",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/v1/conversations/sync": {
+      "post": {
+        "description": "Runs a bounded pass immediately (most recent threads and messages) and, the first time, starts a background backfill of the full history. `backfilling: true` means more conversations will keep landing in the inbox for the next few minutes — poll this list to see them arrive.",
+        "operationId": "MessagesController_sync[1]",
+        "parameters": [
+          {
+            "name": "accountId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Sync conversations from the platform (live API)",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/v1/inbox/conversations/{id}/read": {
+      "post": {
+        "operationId": "MessagesController_markRead[0]",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Mark a conversation as read",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/v1/conversations/{id}/read": {
+      "post": {
+        "operationId": "MessagesController_markRead[1]",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Mark a conversation as read",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/v1/inbox/conversations/{id}": {
+      "get": {
+        "operationId": "MessagesController_findOne[0]",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Retrieve a conversation",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/v1/conversations/{id}": {
+      "get": {
+        "operationId": "MessagesController_findOne[1]",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Retrieve a conversation",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/v1/inbox/conversations/{id}/messages": {
+      "get": {
+        "description": "Returns the latest messages of the thread, rendered oldest-first within the page. Pass `before` (the `nextCursor` of the previous call) to walk further back in time.",
+        "operationId": "MessagesController_getMessages[0]",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "List the messages of a conversation (most recent page first)",
+        "tags": [
+          "inbox"
+        ]
+      },
+      "post": {
+        "operationId": "MessagesController_sendMessage[0]",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Optional key making this request safely retryable: replaying the same key with the same body returns the original response instead of executing twice. Keys are kept for 24 h.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Send a message in a conversation",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/v1/conversations/{id}/messages": {
+      "get": {
+        "description": "Returns the latest messages of the thread, rendered oldest-first within the page. Pass `before` (the `nextCursor` of the previous call) to walk further back in time.",
+        "operationId": "MessagesController_getMessages[1]",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "List the messages of a conversation (most recent page first)",
+        "tags": [
+          "inbox"
+        ]
+      },
+      "post": {
+        "operationId": "MessagesController_sendMessage[1]",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Optional key making this request safely retryable: replaying the same key with the same body returns the original response instead of executing twice. Keys are kept for 24 h.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Send a message in a conversation",
+        "tags": [
+          "inbox"
         ]
       }
     },
@@ -1786,7 +2520,8 @@
                 "youtube",
                 "x",
                 "facebook",
-                "meta_ads"
+                "meta_ads",
+                "linkedin"
               ],
               "type": "string"
             }
@@ -1972,554 +2707,6 @@
         ]
       }
     },
-    "/v1/inbox/conversations": {
-      "post": {
-        "operationId": "MessagesController_createConversation[0]",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateConversationDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "Start (or fetch) a conversation",
-        "tags": [
-          "inbox"
-        ]
-      },
-      "get": {
-        "operationId": "MessagesController_findAll[0]",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "platform",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": [
-                "instagram",
-                "whatsapp",
-                "tiktok",
-                "telegram",
-                "youtube",
-                "x",
-                "facebook",
-                "meta_ads"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "accountId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "List conversations",
-        "tags": [
-          "inbox"
-        ]
-      }
-    },
-    "/v1/conversations": {
-      "post": {
-        "operationId": "MessagesController_createConversation[1]",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateConversationDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "Start (or fetch) a conversation",
-        "tags": [
-          "inbox"
-        ]
-      },
-      "get": {
-        "operationId": "MessagesController_findAll[1]",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "platform",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": [
-                "instagram",
-                "whatsapp",
-                "tiktok",
-                "telegram",
-                "youtube",
-                "x",
-                "facebook",
-                "meta_ads"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "accountId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "List conversations",
-        "tags": [
-          "inbox"
-        ]
-      }
-    },
-    "/v1/inbox/conversations/sync": {
-      "post": {
-        "operationId": "MessagesController_sync[0]",
-        "parameters": [
-          {
-            "name": "accountId",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "Sync conversations from the platform (live API)",
-        "tags": [
-          "inbox"
-        ]
-      }
-    },
-    "/v1/conversations/sync": {
-      "post": {
-        "operationId": "MessagesController_sync[1]",
-        "parameters": [
-          {
-            "name": "accountId",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "Sync conversations from the platform (live API)",
-        "tags": [
-          "inbox"
-        ]
-      }
-    },
-    "/v1/inbox/conversations/{id}/read": {
-      "post": {
-        "operationId": "MessagesController_markRead[0]",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "Mark a conversation as read",
-        "tags": [
-          "inbox"
-        ]
-      }
-    },
-    "/v1/conversations/{id}/read": {
-      "post": {
-        "operationId": "MessagesController_markRead[1]",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "Mark a conversation as read",
-        "tags": [
-          "inbox"
-        ]
-      }
-    },
-    "/v1/inbox/conversations/{id}": {
-      "get": {
-        "operationId": "MessagesController_findOne[0]",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "Retrieve a conversation",
-        "tags": [
-          "inbox"
-        ]
-      }
-    },
-    "/v1/conversations/{id}": {
-      "get": {
-        "operationId": "MessagesController_findOne[1]",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "Retrieve a conversation",
-        "tags": [
-          "inbox"
-        ]
-      }
-    },
-    "/v1/inbox/conversations/{id}/messages": {
-      "get": {
-        "operationId": "MessagesController_getMessages[0]",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "before",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "List the messages of a conversation (paginated, oldest first)",
-        "tags": [
-          "inbox"
-        ]
-      },
-      "post": {
-        "operationId": "MessagesController_sendMessage[0]",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "description": "Optional key making this request safely retryable: replaying the same key with the same body returns the original response instead of executing twice. Keys are kept for 24 h.",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SendMessageDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "Send a message in a conversation",
-        "tags": [
-          "inbox"
-        ]
-      }
-    },
-    "/v1/conversations/{id}/messages": {
-      "get": {
-        "operationId": "MessagesController_getMessages[1]",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "before",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "List the messages of a conversation (paginated, oldest first)",
-        "tags": [
-          "inbox"
-        ]
-      },
-      "post": {
-        "operationId": "MessagesController_sendMessage[1]",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "description": "Optional key making this request safely retryable: replaying the same key with the same body returns the original response instead of executing twice. Keys are kept for 24 h.",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SendMessageDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "api-key": []
-          }
-        ],
-        "summary": "Send a message in a conversation",
-        "tags": [
-          "inbox"
-        ]
-      }
-    },
     "/v1/media/upload": {
       "post": {
         "operationId": "MediaController_upload",
@@ -2694,7 +2881,8 @@
                 "youtube",
                 "x",
                 "facebook",
-                "meta_ads"
+                "meta_ads",
+                "linkedin"
               ],
               "type": "string"
             }
@@ -2783,7 +2971,8 @@
                 "youtube",
                 "x",
                 "facebook",
-                "meta_ads"
+                "meta_ads",
+                "linkedin"
               ],
               "type": "string"
             }
@@ -2927,7 +3116,8 @@
                 "youtube",
                 "x",
                 "facebook",
-                "meta_ads"
+                "meta_ads",
+                "linkedin"
               ],
               "type": "string"
             }
@@ -3016,7 +3206,8 @@
                 "youtube",
                 "x",
                 "facebook",
-                "meta_ads"
+                "meta_ads",
+                "linkedin"
               ],
               "type": "string"
             }
@@ -3149,7 +3340,8 @@
                 "youtube",
                 "x",
                 "facebook",
-                "meta_ads"
+                "meta_ads",
+                "linkedin"
               ],
               "type": "string"
             }
@@ -3247,7 +3439,8 @@
                 "youtube",
                 "x",
                 "facebook",
-                "meta_ads"
+                "meta_ads",
+                "linkedin"
               ],
               "type": "string"
             }
@@ -3336,7 +3529,8 @@
                 "youtube",
                 "x",
                 "facebook",
-                "meta_ads"
+                "meta_ads",
+                "linkedin"
               ],
               "type": "string"
             }
@@ -4144,9 +4338,138 @@
         ]
       }
     },
+    "/v1/playbooks": {
+      "get": {
+        "operationId": "PlaybooksController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List the playbook catalog",
+        "tags": [
+          "playbooks"
+        ]
+      }
+    },
+    "/v1/playbooks/installs": {
+      "get": {
+        "operationId": "PlaybooksController_installs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "List the playbooks installed on this workspace",
+        "tags": [
+          "playbooks"
+        ]
+      }
+    },
+    "/v1/playbooks/{slug}": {
+      "get": {
+        "operationId": "PlaybooksController_get",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Retrieve one playbook, with its inputs and slots",
+        "tags": [
+          "playbooks"
+        ]
+      }
+    },
+    "/v1/playbooks/{slug}/install": {
+      "post": {
+        "description": "Creates the automations and sequences the playbook describes, on the accounts you pass. Everything it creates is a normal PlugKit object: edit or delete it afterwards from Campaigns, or remove the whole install in one call.",
+        "operationId": "PlaybooksController_install",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InstallPlaybookDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Install a playbook",
+        "tags": [
+          "playbooks"
+        ]
+      }
+    },
+    "/v1/playbooks/installs/{id}": {
+      "delete": {
+        "description": "Deletes the automations and sequences it created. Pass `keep=resources` to only forget the install and leave them running.",
+        "operationId": "PlaybooksController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Remove an installed playbook",
+        "tags": [
+          "playbooks"
+        ]
+      }
+    },
     "/v1/webhooks": {
       "post": {
-        "description": "Events: post.published, post.partial, post.failed, message.received, account.disconnected, comment.received, comment.dm_sent, broadcast.finished, usage.threshold_reached. Each delivery is signed with `x-plugkit-signature: t=<unix>,v1=<hex>`, the HMAC-SHA256 of `<t>.<raw body>` with the endpoint secret.",
+        "description": "Events: post.published, post.partial, post.failed, message.received, message.sent, account.disconnected, comment.received, comment.dm_sent, broadcast.finished, usage.threshold_reached. Each delivery is signed with `x-plugkit-signature: t=<unix>,v1=<hex>`, the HMAC-SHA256 of `<t>.<raw body>` with the endpoint secret.",
         "operationId": "WebhookEndpointsController_create",
         "parameters": [],
         "requestBody": {
@@ -4372,6 +4695,19 @@
           }
         }
       },
+      "InviteMemberDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "teammate@gmail.com",
+            "description": "L'adresse avec laquelle l'invité se connecte à PlugKit. Le workspace apparaît dans son sélecteur à sa première connexion sous cette adresse."
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
       "CreateApiKeyDto": {
         "type": "object",
         "properties": {
@@ -4440,7 +4776,8 @@
               "youtube",
               "x",
               "facebook",
-              "meta_ads"
+              "meta_ads",
+              "linkedin"
             ]
           },
           "profileId": {
@@ -4771,6 +5108,81 @@
           "dailyBudget"
         ]
       },
+      "CreateConversationDto": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Account that owns the conversation"
+          },
+          "contactHandle": {
+            "type": "string",
+            "description": "Contact identifier on the platform (Instagram PSID / WhatsApp wa_id)"
+          },
+          "contactName": {
+            "type": "string"
+          },
+          "externalConversationId": {
+            "type": "string",
+            "description": "Conversation id on the platform (defaults to contactHandle)"
+          }
+        },
+        "required": [
+          "accountId",
+          "contactHandle"
+        ]
+      },
+      "MessageTemplateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "order_update"
+          },
+          "language": {
+            "type": "string",
+            "example": "fr",
+            "description": "Language code of the approved template (default en_US)"
+          },
+          "variables": {
+            "description": "Values for the {{1}}, {{2}}… placeholders of the body, in order",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "components": {
+            "description": "Raw Meta components (header, buttons). Escape hatch: overrides `variables`.",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "SendMessageDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Text content of the message. Optional when `template` is given — the template carries the content, and the text is then only what the inbox shows."
+          },
+          "template": {
+            "description": "WhatsApp only: send an approved template instead of free-form text. Required past the 24h messaging window; ignored by other platforms.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MessageTemplateDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
       "MediaItemDto": {
         "type": "object",
         "properties": {
@@ -4838,7 +5250,7 @@
           },
           "content": {
             "type": "string",
-            "description": "Text / caption of the post. REQUIRED, except when `asStory` is set and every target is an Instagram account: an Instagram story has no caption."
+            "description": "Text / caption of the post. REQUIRED, except when `asStory` is set and every target is an Instagram or Facebook account: a story has no caption."
           },
           "accountIds": {
             "description": "Target account ids — the short form. Use `platforms` instead to tailor the content per platform. Exactly one of the two is required.",
@@ -4897,7 +5309,7 @@
           "asStory": {
             "type": "boolean",
             "default": false,
-            "description": "Instagram only: publish to the STORY instead of the feed. A story lasts 24 hours, carries no caption (`content` is ignored, and may be omitted when every target is an Instagram account) and takes exactly one media — a JPEG image (8 MB max) or an MP4/MOV video of 3 to 60 seconds (100 MB max). Cannot be combined with `trialReel`. Ignored by the other platforms."
+            "description": "Instagram and Facebook Pages: publish to the STORY instead of the feed. A story lasts 24 hours, carries no caption (`content` is ignored, and may be omitted when every target is an Instagram or Facebook account) and takes exactly one media — on Instagram a JPEG image (8 MB max) or an MP4/MOV video of 3 to 60 seconds (100 MB max), on a Facebook Page an image (10 MB max) or an MP4 video of 3 to 90 seconds. Cannot be combined with `trialReel`. Ignored by the other platforms, which have no story API: TikTok does not expose one, LinkedIn and YouTube retired theirs."
           },
           "trialGraduation": {
             "type": "string",
@@ -4937,6 +5349,26 @@
             ],
             "default": "public",
             "description": "Visibility of the published video. YouTube maps it directly (`unlisted` = reachable by link but not listed). TikTok has no `unlisted`, so both `unlisted` and `private` publish as SELF_ONLY — visible to the account owner only. The other platforms ignore it."
+          },
+          "tiktokPrivacyLevel": {
+            "type": "string",
+            "enum": [
+              "PUBLIC_TO_EVERYONE",
+              "MUTUAL_FOLLOW_FRIENDS",
+              "FOLLOWER_OF_CREATOR",
+              "SELF_ONLY"
+            ],
+            "description": "TikTok only: the exact privacy level the creator picked, among those returned by `GET /accounts/{id}/publish-options`. Takes precedence over `privacy`, which only knows three values where TikTok has four. Rejected if the creator is not allowed to use it."
+          },
+          "promotionalContent": {
+            "type": "boolean",
+            "default": false,
+            "description": "TikTok only: the video promotes the creator's own brand, product or business. TikTok labels it « Promotional content »."
+          },
+          "paidPartnership": {
+            "type": "boolean",
+            "default": false,
+            "description": "TikTok only: the video promotes a third party as a paid partnership. TikTok labels it « Paid partnership », which wins over « Promotional content » when both are declared. Cannot be combined with a private (SELF_ONLY) visibility."
           }
         },
         "required": [
@@ -5038,83 +5470,26 @@
               "private"
             ],
             "description": "Visibility of the published video, on YouTube and TikTok (see POST /posts)"
+          },
+          "tiktokPrivacyLevel": {
+            "type": "string",
+            "enum": [
+              "PUBLIC_TO_EVERYONE",
+              "MUTUAL_FOLLOW_FRIENDS",
+              "FOLLOWER_OF_CREATOR",
+              "SELF_ONLY"
+            ],
+            "description": "TikTok only: the exact privacy level picked by the creator (see POST /posts)"
+          },
+          "promotionalContent": {
+            "type": "boolean",
+            "description": "TikTok only: the video promotes the creator's own brand (see POST /posts)"
+          },
+          "paidPartnership": {
+            "type": "boolean",
+            "description": "TikTok only: the video is a paid partnership (see POST /posts)"
           }
         }
-      },
-      "CreateConversationDto": {
-        "type": "object",
-        "properties": {
-          "accountId": {
-            "type": "string",
-            "description": "Account that owns the conversation"
-          },
-          "contactHandle": {
-            "type": "string",
-            "description": "Contact identifier on the platform (Instagram PSID / WhatsApp wa_id)"
-          },
-          "contactName": {
-            "type": "string"
-          },
-          "externalConversationId": {
-            "type": "string",
-            "description": "Conversation id on the platform (defaults to contactHandle)"
-          }
-        },
-        "required": [
-          "accountId",
-          "contactHandle"
-        ]
-      },
-      "MessageTemplateDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "order_update"
-          },
-          "language": {
-            "type": "string",
-            "example": "fr",
-            "description": "Language code of the approved template (default en_US)"
-          },
-          "variables": {
-            "description": "Values for the {{1}}, {{2}}… placeholders of the body, in order",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "components": {
-            "description": "Raw Meta components (header, buttons). Escape hatch: overrides `variables`.",
-            "type": "array",
-            "items": {
-              "type": "object"
-            }
-          }
-        },
-        "required": [
-          "name"
-        ]
-      },
-      "SendMessageDto": {
-        "type": "object",
-        "properties": {
-          "text": {
-            "type": "string",
-            "description": "Text content of the message. Optional when `template` is given — the template carries the content, and the text is then only what the inbox shows."
-          },
-          "template": {
-            "description": "WhatsApp only: send an approved template instead of free-form text. Required past the 24h messaging window; ignored by other platforms.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/MessageTemplateDto"
-              }
-            ]
-          }
-        },
-        "required": [
-          "text"
-        ]
       },
       "SyncAnalyticsDto": {
         "type": "object",
@@ -5287,6 +5662,14 @@
             "type": "string",
             "description": "The message every recipient gets."
           },
+          "buttonLabel": {
+            "type": "string",
+            "description": "Button label under the message (20 chars max shown). Needs `buttonUrl`."
+          },
+          "buttonUrl": {
+            "type": "string",
+            "description": "Button destination (https URL). Needs `buttonLabel`. Rendered as a button template on Instagram and Facebook, a CTA on WhatsApp, an inline keyboard on Telegram; if the platform refuses it, the URL is appended to the text."
+          },
           "audience": {
             "$ref": "#/components/schemas/BroadcastAudienceDto"
           },
@@ -5320,6 +5703,14 @@
             "type": "string",
             "description": "The message every recipient gets."
           },
+          "buttonLabel": {
+            "type": "string",
+            "description": "Button label under the message (20 chars max shown). Needs `buttonUrl`."
+          },
+          "buttonUrl": {
+            "type": "string",
+            "description": "Button destination (https URL). Needs `buttonLabel`. Rendered as a button template on Instagram and Facebook, a CTA on WhatsApp, an inline keyboard on Telegram; if the platform refuses it, the URL is appended to the text."
+          },
           "audience": {
             "$ref": "#/components/schemas/BroadcastAudienceDto"
           },
@@ -5347,6 +5738,14 @@
           },
           "text": {
             "type": "string"
+          },
+          "buttonLabel": {
+            "type": "string",
+            "description": "Button label under the message (20 chars max shown). Needs `buttonUrl`. Without it the link has to be pasted into the text, and a bare link in a DM is what Meta flags."
+          },
+          "buttonUrl": {
+            "type": "string",
+            "description": "Button destination (https URL). Needs `buttonLabel`. Instagram and Facebook render it as a button template, WhatsApp as a CTA, Telegram as an inline keyboard; if the platform refuses it, the URL is appended to the text instead of being lost."
           }
         },
         "required": [
@@ -5479,6 +5878,37 @@
           }
         }
       },
+      "InstallPlaybookDto": {
+        "type": "object",
+        "properties": {
+          "accounts": {
+            "type": "object",
+            "description": "The account to use for each slot of the playbook, keyed by slot (`{\"account\": \"acc_123\"}`). Every slot listed by `GET /playbooks/{slug}` must be filled.",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "account": "clx0account123"
+            }
+          },
+          "inputs": {
+            "type": "object",
+            "description": "Values for the playbook inputs, keyed by input key. Anything left out falls back to the catalog default, so `{\"keyword\":\"GUIDE\",\"link\":\"https://…\"}` is usually enough.",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "keyword": "GUIDE",
+              "link": "https://example.com/guide"
+            }
+          },
+          "force": {
+            "type": "boolean",
+            "description": "Install again on an account that already runs this playbook. Off by default: two copies send two DMs for a single comment.",
+            "default": false
+          }
+        }
+      },
       "CreateWebhookDto": {
         "type": "object",
         "properties": {
@@ -5497,6 +5927,7 @@
                 "post.partial",
                 "post.failed",
                 "message.received",
+                "message.sent",
                 "account.disconnected",
                 "comment.received",
                 "comment.dm_sent",
@@ -5526,6 +5957,7 @@
                 "post.partial",
                 "post.failed",
                 "message.received",
+                "message.sent",
                 "account.disconnected",
                 "comment.received",
                 "comment.dm_sent",
