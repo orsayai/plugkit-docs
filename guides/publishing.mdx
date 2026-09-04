@@ -61,6 +61,24 @@ custom video thumbnail, none of which a bare URL can express:
   publish time, not at create time.
 </Warning>
 
+### The media library
+
+Files you upload stay in the account's media library, whichever way they got in
+— the dashboard composer, an upload link, an import from a URL, or the API. List
+them with `GET /media`, and pass their ids to a post as `mediaIds` instead of
+copying URLs around:
+
+```bash
+curl https://api.plugkit.co/v1/media -H "Authorization: Bearer sk_your_key"
+# → { "media": [ { "id": "…", "filename": "reel-4.mp4", "type": "video",
+#                  "sizeBytes": 48210022, "url": "https://api.plugkit.co/v1/media/file/…" } ] }
+```
+
+An assistant does the same through `list_media`, which is what lets someone say
+"publish the reel I just uploaded" without pasting anything. `DELETE /media/:id`
+removes a file for good; it is refused while a post that has not been published
+yet still uses it.
+
 ### Uploading a file
 
 No public URL? Two ways in, depending on size.

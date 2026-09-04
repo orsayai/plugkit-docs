@@ -2744,6 +2744,96 @@
         ]
       }
     },
+    "/v1/media": {
+      "get": {
+        "operationId": "MediaController_listLibrary",
+        "parameters": [
+          {
+            "name": "type",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includePending",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Lister les médias de la bibliothèque",
+        "tags": [
+          "media"
+        ]
+      }
+    },
+    "/v1/media/{id}": {
+      "delete": {
+        "operationId": "MediaController_removeFromLibrary",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Supprimer un média de la bibliothèque",
+        "tags": [
+          "media"
+        ]
+      }
+    },
     "/v1/media/upload": {
       "post": {
         "operationId": "MediaController_upload",
@@ -2877,6 +2967,35 @@
           }
         ],
         "summary": "Envoyer un fichier avec un lien d'envoi (POST)",
+        "tags": [
+          "media"
+        ]
+      }
+    },
+    "/v1/media/uploads/{token}/complete": {
+      "post": {
+        "operationId": "MediaController_completeDirectUpload",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Signaler la fin d'un envoi direct",
         "tags": [
           "media"
         ]
