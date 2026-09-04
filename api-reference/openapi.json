@@ -461,6 +461,43 @@
         ]
       },
       "put": {
+        "operationId": "ProfilesController_replace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Update a profile",
+        "tags": [
+          "profiles"
+        ]
+      },
+      "patch": {
         "operationId": "ProfilesController_update",
         "parameters": [
           {
@@ -2763,6 +2800,33 @@
       }
     },
     "/v1/media/upload/{token}": {
+      "get": {
+        "operationId": "MediaController_uploadPage",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Page de dépôt du billet (navigateur)",
+        "tags": [
+          "media"
+        ]
+      },
       "put": {
         "operationId": "MediaController_putWithTicket",
         "parameters": [
@@ -3726,6 +3790,43 @@
         ]
       },
       "put": {
+        "operationId": "CommentAutomationsController_replace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommentAutomationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Update an automation",
+        "tags": [
+          "automations"
+        ]
+      },
+      "patch": {
         "operationId": "CommentAutomationsController_update",
         "parameters": [
           {
@@ -3946,6 +4047,43 @@
         ]
       },
       "put": {
+        "operationId": "BroadcastsController_replace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBroadcastDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Update a draft or scheduled broadcast",
+        "tags": [
+          "campaigns"
+        ]
+      },
+      "patch": {
         "operationId": "BroadcastsController_update",
         "parameters": [
           {
@@ -4195,6 +4333,43 @@
         ]
       },
       "put": {
+        "operationId": "SequencesController_replace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSequenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Update a sequence",
+        "tags": [
+          "campaigns"
+        ]
+      },
+      "patch": {
         "operationId": "SequencesController_update",
         "parameters": [
           {
@@ -4469,7 +4644,7 @@
     },
     "/v1/webhooks": {
       "post": {
-        "description": "Events: post.published, post.partial, post.failed, message.received, message.sent, account.disconnected, comment.received, comment.dm_sent, broadcast.finished, usage.threshold_reached. Each delivery is signed with `x-plugkit-signature: t=<unix>,v1=<hex>`, the HMAC-SHA256 of `<t>.<raw body>` with the endpoint secret.",
+        "description": "Events: post.published, post.partial, post.failed, message.received, message.sent, message.undelivered, account.disconnected, comment.received, comment.dm_sent, broadcast.finished, usage.threshold_reached. Each delivery is signed with `x-plugkit-signature: t=<unix>,v1=<hex>`, the HMAC-SHA256 of `<t>.<raw body>` with the endpoint secret.",
         "operationId": "WebhookEndpointsController_create",
         "parameters": [],
         "requestBody": {
@@ -5928,6 +6103,7 @@
                 "post.failed",
                 "message.received",
                 "message.sent",
+                "message.undelivered",
                 "account.disconnected",
                 "comment.received",
                 "comment.dm_sent",
@@ -5958,6 +6134,7 @@
                 "post.failed",
                 "message.received",
                 "message.sent",
+                "message.undelivered",
                 "account.disconnected",
                 "comment.received",
                 "comment.dm_sent",

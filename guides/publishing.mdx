@@ -93,6 +93,14 @@ curl -X PUT --upload-file ./episode-12.mp4 "PASTE_uploadUrl"
 Use `mediaUrl` (not `uploadUrl`) in `mediaItems`. The ticket is single-use and
 expires.
 
+**No terminal? Hand the ticket to a person.** The same address opened in a
+browser (`uploadPageUrl`, returned alongside `uploadUrl`) is a page where they
+drop the file — it goes from their browser straight to storage. This is the way
+in when an assistant drives PlugKit from a web chat: it has no shell to run the
+`curl`, and attaching the video to the conversation instead runs into the chat
+client's own attachment limit (30 MB on claude.ai), which is not PlugKit's.
+Opening the page doesn't consume the ticket; only the upload does.
+
 ## Per-platform overrides
 
 One idea rarely fits every network verbatim — 280 characters on X, a vertical
