@@ -60,6 +60,7 @@
             "pages": [
               "guides/publishing",
               "guides/messaging",
+              "guides/engagement",
               "guides/campaigns",
               "guides/analytics",
               "guides/webhooks"

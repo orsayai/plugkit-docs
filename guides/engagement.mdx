@@ -1,0 +1,147 @@
+---
+title: "Engagement"
+description: "Comments, replies and mentions across Instagram, Facebook Pages and Threads."
+---
+
+Public engagement is what people write **under your posts**, and the posts that
+**mention you**. It is exposed as a single feed across every connected account,
+whatever the platform underneath.
+
+<Note>
+  This is not the inbox. A DM is a private thread with one contact; a comment is
+  public, hangs off a post, and several people reply to each other under it. The
+  two live at separate paths and never mix — a commenter never becomes a
+  broadcast recipient.
+</Note>
+
+## What each platform allows
+
+| Platform | Read | Reply | Hide | Delete | Mentions |
+| --- | --- | --- | --- | --- | --- |
+| **Instagram** | ✅ | ✅ | ✅ | ✅ | — |
+| **Facebook Page** | ✅ | ✅ | ✅ | ✅ | — |
+| **Threads** | ✅ | ✅ | ✅ | — | ✅ |
+
+Threads cannot delete someone else's reply — the platform only lets you delete
+your own posts — so `DELETE` returns `unsupported_for_platform` there. Hiding
+does the same job and is reversible.
+
+A **mention** belongs to its author: you can reply to it, never hide or delete
+it. Both actions are refused explicitly rather than failing at the platform.
+
+## The feed
+
+```bash
+curl "https://api.plugkit.co/v1/engagement" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+```json
+{
+  "engagements": [
+    {
+      "_id": "eng_a1b2",
+      "accountId": "acc_9f",
+      "platform": "instagram",
+      "kind": "comment",
+      "postId": "17895...",
+      "parentId": null,
+      "author": { "handle": "lea.b", "name": "lea.b" },
+      "text": "Where can I get this?",
+      "hidden": false,
+      "isOwn": false,
+      "handled": false,
+      "publishedAt": "2026-09-08T09:12:00.000Z",
+      "post": {
+        "caption": "New drop is live",
+        "permalink": "https://www.instagram.com/p/C.../",
+        "thumbnailUrl": "https://..."
+      }
+    }
+  ],
+  "pagination": { "hasMore": true, "nextCursor": "eng_a1b2" }
+}
+```
+
+Every row carries the `post` it sits under: a comment read without the content
+it answers cannot be answered well.
+
+### Filters
+
+| Parameter | Meaning |
+| --- | --- |
+| `status` | `pending` (default), `handled`, `all` |
+| `accountId` / `profileId` / `platform` | Narrow the scope |
+| `kind` | `comment` or `mention` |
+| `postId` | Only the comments under one platform post |
+| `limit` / `before` | Page size (1–200, default 50) and the previous `nextCursor` |
+
+`pending` is the working list: it leaves out **your own replies** and anything
+**deleted**, since neither is waiting on you.
+
+<Note>
+  `hidden` is three-state. `false` = visible, `true` = hidden by you, `null` =
+  the platform does not report it for this object. Do not read `null` as
+  visible.
+</Note>
+
+## Where the data comes from
+
+Two sources write the same rows, and you need both:
+
+- **Webhooks**, which deliver new comments in real time. Subscribe to the
+  `comments` field — see [Webhooks](/guides/webhooks).
+- **`POST /v1/engagement/sync`**, which reads the platform to catch up after an
+  outage, to fill in what a webhook payload omits (like counts, hidden state,
+  author), and to reach an older post.
+
+```bash
+curl -X POST "https://api.plugkit.co/v1/engagement/sync" \
+  -H "Authorization: Bearer sk_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{ "accountId": "acc_9f" }'
+```
+
+Without `postId`, the sweep covers each account's most recent posts and its
+mentions. Pass `postId` to reach further back. A failing account never stops the
+others — the response names it:
+
+```json
+{ "success": true, "accounts": 3, "fetched": 41,
+  "errors": [{ "accountId": "acc_2", "message": "reconnect the account" }] }
+```
+
+## Acting on a row
+
+All four take the engagement `_id`, not a platform comment id.
+
+```bash
+# Reply — PUBLIC, under the post, signed by the account. Marks it handled.
+curl -X POST ".../v1/engagement/eng_a1b2/reply" -d '{ "message": "DM sent!" }'
+
+# Hide (reversible) — the author still sees it and is not notified
+curl -X POST ".../v1/engagement/eng_a1b2/hide" -d '{ "hidden": true }'
+
+# Clear it without replying
+curl -X POST ".../v1/engagement/eng_a1b2/handled" -d '{ "handled": true }'
+
+# Delete — irreversible
+curl -X DELETE ".../v1/engagement/eng_a1b2"
+```
+
+Replying stores your reply immediately, so it appears in the feed without
+waiting for the webhook to echo it back.
+
+A deleted comment keeps its row, flagged `deleted`. A comment removed after you
+answered it is part of the exchange, and reading it back is the only way to make
+sense of the thread later.
+
+## From an assistant
+
+Over MCP: `list_engagement`, `get_engagement_summary`, `sync_engagement`,
+`reply_to_engagement`, `hide_comment`, `mark_engagement_handled`,
+`delete_comment`.
+
+`get_engagement_summary` is the cheap first call — it returns how much is
+unanswered per account, so the assistant can decide where to look before reading
+anything.

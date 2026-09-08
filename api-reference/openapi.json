@@ -24,7 +24,16 @@
     "/v1/billing/subscription": {
       "get": {
         "operationId": "BillingController_subscription",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "datafastVisitorId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
@@ -44,7 +53,16 @@
     "/v1/billing/checkout": {
       "post": {
         "operationId": "BillingController_checkout",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "datafastVisitorId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -639,7 +657,8 @@
                 "x",
                 "facebook",
                 "meta_ads",
-                "linkedin"
+                "linkedin",
+                "threads"
               ],
               "type": "string"
             }
@@ -1979,7 +1998,8 @@
                 "x",
                 "facebook",
                 "meta_ads",
-                "linkedin"
+                "linkedin",
+                "threads"
               ],
               "type": "string"
             }
@@ -2076,7 +2096,8 @@
                 "x",
                 "facebook",
                 "meta_ads",
-                "linkedin"
+                "linkedin",
+                "threads"
               ],
               "type": "string"
             }
@@ -2558,7 +2579,8 @@
                 "x",
                 "facebook",
                 "meta_ads",
-                "linkedin"
+                "linkedin",
+                "threads"
               ],
               "type": "string"
             }
@@ -2741,6 +2763,246 @@
         "summary": "Publish an existing post now (scheduled, draft, or retry after a failure)",
         "tags": [
           "posts"
+        ]
+      }
+    },
+    "/v1/shopping/{accountId}/status": {
+      "get": {
+        "description": "Says whether products can be tagged, and when not, exactly what is missing: no authorization yet, an expired one, a shop Meta has not approved, or a shop with no catalog. Meta is re-checked at most every 6 hours unless `refresh=true`.",
+        "operationId": "ShoppingController_status",
+        "parameters": [
+          {
+            "name": "accountId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "refresh",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Product tagging status of an Instagram account",
+        "tags": [
+          "shopping"
+        ]
+      }
+    },
+    "/v1/shopping/{accountId}/authorize": {
+      "get": {
+        "description": "Product tagging lives on a different Meta API than the Instagram connection PlugKit already holds, so it needs its own authorization. Open the returned URL in a browser and pick the Facebook Page linked to this Instagram account.",
+        "operationId": "ShoppingController_authorize",
+        "parameters": [
+          {
+            "name": "accountId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Get the Facebook authorization URL that enables product tagging",
+        "tags": [
+          "shopping"
+        ]
+      }
+    },
+    "/v1/shopping/callback": {
+      "get": {
+        "operationId": "ShoppingController_callback",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "error",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "error_description",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "OAuth callback for the shopping authorization",
+        "tags": [
+          "shopping"
+        ]
+      }
+    },
+    "/v1/shopping/{accountId}": {
+      "delete": {
+        "description": "Removes the authorization PlugKit holds. Posts keep publishing; they just stop carrying product tags.",
+        "operationId": "ShoppingController_revoke",
+        "parameters": [
+          {
+            "name": "accountId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Turn product tagging off for an account",
+        "tags": [
+          "shopping"
+        ]
+      }
+    },
+    "/v1/shopping/{accountId}/products": {
+      "get": {
+        "description": "`q` matches a product name or SKU. Only products Meta has approved can be tagged; the others are returned with their review status so it is clear why they are refused.",
+        "operationId": "ShoppingController_products",
+        "parameters": [
+          {
+            "name": "accountId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Search the products of the account’s Instagram shop",
+        "tags": [
+          "shopping"
+        ]
+      }
+    },
+    "/v1/shopping/{accountId}/media/{mediaId}/tags": {
+      "post": {
+        "description": "Replaces the product tags of an existing media. Up to 20 tags on a photo (each with x/y coordinates between 0 and 1) and 30 on a video or reel, where coordinates do not apply. Instagram allows 25 tagged posts per 24 hours per account.",
+        "operationId": "ShoppingController_tag",
+        "parameters": [
+          {
+            "name": "accountId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mediaId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagProductsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Tag products on a published Instagram post or reel",
+        "tags": [
+          "shopping"
         ]
       }
     },
@@ -3065,7 +3327,8 @@
                 "x",
                 "facebook",
                 "meta_ads",
-                "linkedin"
+                "linkedin",
+                "threads"
               ],
               "type": "string"
             }
@@ -3155,7 +3418,8 @@
                 "x",
                 "facebook",
                 "meta_ads",
-                "linkedin"
+                "linkedin",
+                "threads"
               ],
               "type": "string"
             }
@@ -3300,7 +3564,8 @@
                 "x",
                 "facebook",
                 "meta_ads",
-                "linkedin"
+                "linkedin",
+                "threads"
               ],
               "type": "string"
             }
@@ -3390,7 +3655,8 @@
                 "x",
                 "facebook",
                 "meta_ads",
-                "linkedin"
+                "linkedin",
+                "threads"
               ],
               "type": "string"
             }
@@ -3524,7 +3790,8 @@
                 "x",
                 "facebook",
                 "meta_ads",
-                "linkedin"
+                "linkedin",
+                "threads"
               ],
               "type": "string"
             }
@@ -3623,7 +3890,8 @@
                 "x",
                 "facebook",
                 "meta_ads",
-                "linkedin"
+                "linkedin",
+                "threads"
               ],
               "type": "string"
             }
@@ -3713,7 +3981,8 @@
                 "x",
                 "facebook",
                 "meta_ads",
-                "linkedin"
+                "linkedin",
+                "threads"
               ],
               "type": "string"
             }
@@ -4632,6 +4901,411 @@
         ]
       }
     },
+    "/v1/engagement": {
+      "get": {
+        "description": "Defaults to what still needs an answer. Each row carries the post it belongs to, so a comment can be read in context.",
+        "operationId": "EngagementController_list",
+        "parameters": [
+          {
+            "name": "profileId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to one profile.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to one connected account.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "instagram",
+                "whatsapp",
+                "tiktok",
+                "telegram",
+                "youtube",
+                "x",
+                "facebook",
+                "meta_ads",
+                "linkedin",
+                "threads"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "required": false,
+            "in": "query",
+            "description": "`comment` = left on one of your posts (you can reply, hide, delete). `mention` = someone else’s post naming you (you can only reply).",
+            "schema": {
+              "enum": [
+                "comment",
+                "mention"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "postId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to the comments of one post (platform post id).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Defaults to `pending` — what still needs an answer. `pending` excludes your own replies and anything deleted, since neither is waiting on you.",
+            "schema": {
+              "enum": [
+                "pending",
+                "handled",
+                "all"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Page size (1-200, default 50).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "required": false,
+            "in": "query",
+            "description": "The `nextCursor` of the previous call, to walk further back.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Comments, replies and mentions, most recent first",
+        "tags": [
+          "engagement"
+        ]
+      }
+    },
+    "/v1/engagement/summary": {
+      "get": {
+        "operationId": "EngagementController_summary",
+        "parameters": [
+          {
+            "name": "profileId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to one profile.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to one connected account.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "instagram",
+                "whatsapp",
+                "tiktok",
+                "telegram",
+                "youtube",
+                "x",
+                "facebook",
+                "meta_ads",
+                "linkedin",
+                "threads"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "required": false,
+            "in": "query",
+            "description": "`comment` = left on one of your posts (you can reply, hide, delete). `mention` = someone else’s post naming you (you can only reply).",
+            "schema": {
+              "enum": [
+                "comment",
+                "mention"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "postId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to the comments of one post (platform post id).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Defaults to `pending` — what still needs an answer. `pending` excludes your own replies and anything deleted, since neither is waiting on you.",
+            "schema": {
+              "enum": [
+                "pending",
+                "handled",
+                "all"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Page size (1-200, default 50).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "required": false,
+            "in": "query",
+            "description": "The `nextCursor` of the previous call, to walk further back.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "How much is left to handle, per account",
+        "tags": [
+          "engagement"
+        ]
+      }
+    },
+    "/v1/engagement/sync": {
+      "post": {
+        "description": "Webhooks already deliver new comments in real time; this catches up after an outage and fills in what a webhook payload leaves out (like counts, hidden state, author).",
+        "operationId": "EngagementController_sync",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncEngagementDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Pull comments and mentions from the platforms",
+        "tags": [
+          "engagement"
+        ]
+      }
+    },
+    "/v1/engagement/{id}/reply": {
+      "post": {
+        "operationId": "EngagementController_reply",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplyEngagementDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Reply publicly to a comment, reply or mention",
+        "tags": [
+          "engagement"
+        ]
+      }
+    },
+    "/v1/engagement/{id}/hide": {
+      "post": {
+        "description": "Hiding keeps the comment visible to its author, who is not notified — it is the reversible move, unlike deleting.",
+        "operationId": "EngagementController_hide",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HideEngagementDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Hide or unhide a comment",
+        "tags": [
+          "engagement"
+        ]
+      }
+    },
+    "/v1/engagement/{id}/handled": {
+      "post": {
+        "operationId": "EngagementController_handled",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HandledEngagementDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Mark as handled, or put it back in the pile",
+        "tags": [
+          "engagement"
+        ]
+      }
+    },
+    "/v1/engagement/{id}": {
+      "delete": {
+        "operationId": "EngagementController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "api-key": []
+          }
+        ],
+        "summary": "Delete a comment on one of your posts",
+        "tags": [
+          "engagement"
+        ]
+      }
+    },
     "/v1/playbooks": {
       "get": {
         "operationId": "PlaybooksController_list",
@@ -5071,7 +5745,8 @@
               "x",
               "facebook",
               "meta_ads",
-              "linkedin"
+              "linkedin",
+              "threads"
             ]
           },
           "profileId": {
@@ -5530,6 +6205,32 @@
           "accountId"
         ]
       },
+      "ProductTagDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "description": "Product id from the Instagram shop catalog, as returned by GET /shopping/{accountId}/products."
+          },
+          "x": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0.5,
+            "description": "Horizontal position of the tag on a photo, from 0 (left) to 1 (right). Ignored on a video or reel. Defaults to the centre — the creator can move it from the Instagram app."
+          },
+          "y": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0.5,
+            "description": "Vertical position of the tag on a photo, from 0 (top) to 1 (bottom). Ignored on a video or reel."
+          }
+        },
+        "required": [
+          "productId"
+        ]
+      },
       "CreatePostDto": {
         "type": "object",
         "properties": {
@@ -5618,6 +6319,13 @@
             "type": "boolean",
             "default": true,
             "description": "Instagram only, reels: also show the reel in the account feed, not just in the Reels tab."
+          },
+          "productTags": {
+            "description": "Instagram only: products from the account’s Instagram shop to tag on the post — the tiles shown under a photo or in a reel’s \"In this reel\" panel. Requires product tagging to be enabled on the account (`GET /shopping/{accountId}/status`); product ids come from `GET /shopping/{accountId}/products`. Up to 20 tags on a photo, 30 on a reel; Instagram allows 25 tagged posts per account per 24 hours. Tags are applied right after the post goes live: if Meta refuses them, the post still publishes and the target reports why.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductTagDto"
+            }
           },
           "allowComment": {
             "type": "boolean",
@@ -5744,6 +6452,13 @@
             "type": "boolean",
             "description": "Instagram only: also show the reel in the account feed (see POST /posts)"
           },
+          "productTags": {
+            "description": "Instagram only: products to tag on the post (see POST /posts). An empty array removes the products the post was carrying.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductTagDto"
+            }
+          },
           "allowComment": {
             "type": "boolean",
             "description": "TikTok only: allow comments (see POST /posts)"
@@ -5784,6 +6499,21 @@
             "description": "TikTok only: the video is a paid partnership (see POST /posts)"
           }
         }
+      },
+      "TagProductsDto": {
+        "type": "object",
+        "properties": {
+          "productTags": {
+            "description": "The tags to put on the media. This REPLACES the tags already there. Up to 20 on a photo, 30 on a video or reel.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductTagDto"
+            }
+          }
+        },
+        "required": [
+          "productTags"
+        ]
       },
       "SyncAnalyticsDto": {
         "type": "object",
@@ -6169,6 +6899,50 @@
               "active",
               "paused"
             ]
+          }
+        }
+      },
+      "SyncEngagementDto": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Only this account. Omit to sync every eligible account."
+          },
+          "profileId": {
+            "type": "string",
+            "description": "Only the accounts of this profile."
+          },
+          "postId": {
+            "type": "string",
+            "description": "Only this post (platform post id). Without it, the most recent posts of each account are swept — pass it to reach an older post."
+          }
+        }
+      },
+      "ReplyEngagementDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The public reply to publish."
+          }
+        }
+      },
+      "HideEngagementDto": {
+        "type": "object",
+        "properties": {
+          "hidden": {
+            "type": "boolean",
+            "description": "true hides the comment, false brings it back."
+          }
+        }
+      },
+      "HandledEngagementDto": {
+        "type": "object",
+        "properties": {
+          "handled": {
+            "type": "boolean",
+            "description": "Mark as handled (true) or put it back in the pile (false)."
           }
         }
       },

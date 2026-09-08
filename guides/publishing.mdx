@@ -148,8 +148,28 @@ given:
 | **YouTube** | video | `title` required; `privacy` maps to the upload's visibility. |
 | **X** | optional | Text only, **or** 1–4 images, **or** one video/GIF. |
 | **Telegram** | optional | The bot must be an admin of the channel. |
+| **LinkedIn** | optional | Text only, **or** 1–20 images, **or** one video. Posts to the member's profile. |
+| **Threads** | optional | Text only (500 chars), **or** one image/video, **or** a carousel of 2–20. |
 
 WhatsApp doesn't do posts — see [Messaging](/guides/messaging).
+
+### Threads
+
+Threads is a Meta platform, but it is not Instagram: it has its own app
+credentials, its own authorization screen and its own `threads_*` permissions.
+Nothing carries over from a connected Instagram account.
+
+- **500 characters**, and Threads counts emoji as UTF-8 bytes. A longer `content`
+  is rejected up front rather than silently truncated.
+- **A carousel takes 2 to 20 items.** The caption belongs to the post, not to the
+  individual media.
+- **`allowComment: false` closes replies** to mentioned accounts only — that is
+  the strictest setting Threads offers; there is no "nobody".
+- **No stories, no drafts, no privacy levels.** A Threads post is public. Those
+  options are refused rather than accepted and ignored.
+- **No messaging at all.** Threads has no DM API, so it never appears in the
+  Inbox, in broadcasts, in sequences, or in comment-to-DM automations.
+- Rate limits are the platform's: 250 published posts per 24 hours.
 
 ### Instagram stories
 

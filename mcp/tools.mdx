@@ -103,8 +103,8 @@ platform call. See [Analytics](/guides/analytics).
 | `get_account_analytics` | read | Live account read: followers, following, post count, reach where exposed. One object, billed on X. |
 | `get_account_media` | read | Recent posts on the account with their metrics and `mediaId`. |
 | `get_post_analytics` | read | Live read of one published post. |
-| `get_comments` | read | Comments on a published post. |
-| `reply_to_comment` | write | Reply publicly — threaded on a `commentId`, or on the post itself. |
+| `get_comments` | read | Comments on ONE known post, read live. For working through everything that needs answering, use `list_engagement` below. |
+| `reply_to_comment` | write | Reply publicly using PLATFORM ids — threaded on a `commentId`, or on the post itself. |
 
 <Note>
   `get_*_analytics` query the platform **live**: current value, one object, and
@@ -112,6 +112,29 @@ platform call. See [Analytics](/guides/analytics).
   ranking, a trend, a comparison — the `get_analytics_*` tools above answer in
   one call and cost nothing.
 </Note>
+
+## Engagement
+
+Comments on your posts, replies, and posts that mention you — Instagram,
+Facebook Pages and Threads, in one feed. These take the engagement `_id` from
+`list_engagement`, not a platform comment id.
+
+| Tool | | What it does |
+| --- | --- | --- |
+| `get_engagement_summary` | read | How much is unanswered, per account. The cheap first call — start here. |
+| `list_engagement` | read | The feed, most recent first. Defaults to what still needs an answer, each row carrying the post it sits under. |
+| `sync_engagement` | write | Pull from the platforms — after an outage, or to reach an older post via `postId`. Webhooks already deliver new comments. |
+| `reply_to_engagement` | write | Publish a PUBLIC reply, signed by the account. Marks the item handled. |
+| `hide_comment` | write | Hide a comment or bring it back. Reversible, author not notified — prefer it to deleting. |
+| `mark_engagement_handled` | write | Clear something that needs no answer. |
+| `delete_comment` | write | Permanently delete a comment on your post. Irreversible. |
+
+<Warning>
+  `reply_to_engagement` and `reply_to_comment` publish **publicly**, under the
+  post, signed by the connected account — they are not DMs, and no platform
+  offers an edit. A mention belongs to its author: it can be replied to, never
+  hidden or deleted.
+</Warning>
 
 ## Campaigns
 
