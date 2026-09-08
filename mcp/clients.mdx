@@ -1,6 +1,6 @@
 ---
 title: "Connect a client"
-description: "Add the PlugKit MCP server to Claude, Claude Code, Cursor, VS Code, or any other MCP client."
+description: "Add the PlugKit MCP server to Claude, ChatGPT, Claude Code, Cursor, VS Code, or any other MCP client."
 ---
 
 Every client needs the same thing — the server URL:
@@ -47,6 +47,47 @@ to paste unless you want one.
 <Note>
   Custom connectors are available on Free, Pro, Max, Team and Enterprise plans;
   free accounts are limited to one custom connector.
+</Note>
+
+## ChatGPT
+
+ChatGPT calls them *connectors* too, and takes the same URL — but custom
+connectors live behind **developer mode**, which is off until you turn it on.
+
+<Steps>
+  <Step title="Turn developer mode on">
+    In ChatGPT: [Settings → Apps & Connectors](https://chatgpt.com/#settings/Connectors)
+    → **Advanced settings** → **Developer mode**.
+  </Step>
+  <Step title="Create the connector">
+    Back on **Apps & Connectors**, click **Create**. Name it `PlugKit`, paste
+    `https://api.plugkit.co/mcp` as the MCP server URL, and pick **OAuth** as the
+    authentication. Leave the client id and secret empty — PlugKit registers
+    ChatGPT itself.
+  </Step>
+  <Step title="Approve">
+    ChatGPT opens PlugKit: sign in if needed, pick read-only or full access, and
+    approve.
+  </Step>
+  <Step title="Use it">
+    In a new chat, open the **+** menu and select **PlugKit**. Ask *"search my
+    PlugKit account for the conversation about pricing"* — it should call
+    `search`, then `fetch` on the result.
+  </Step>
+</Steps>
+
+<Note>
+  Custom connectors need the ChatGPT **web** app and a paid plan (Plus, Pro,
+  Business, Enterprise or Edu). They are not available on the free plan.
+</Note>
+
+<Note>
+  ChatGPT expects every connector to expose two tools with fixed names, `search`
+  and `fetch` — that is how it looks things up and cites them. PlugKit serves
+  both, over everything the account holds: posts, conversations (by contact
+  **and** by what was said in them), accounts, media, automations, sequences,
+  broadcasts and playbooks. They are read-only, and every client gets them, not
+  just ChatGPT.
 </Note>
 
 ## Claude Code

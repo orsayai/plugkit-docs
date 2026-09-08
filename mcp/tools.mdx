@@ -1,6 +1,6 @@
 ---
 title: "Tools & workflows"
-description: "The 77 tools and 3 ready-made workflows exposed by the PlugKit MCP server."
+description: "The 78 tools and 3 ready-made workflows exposed by the PlugKit MCP server."
 ---
 
 Every tool maps to the REST API you already know — same vocabulary, same ids.
@@ -9,6 +9,19 @@ Tools marked **write** are hidden entirely from a session granted `mcp:read`.
 <Note>
   Start with `whoami`. Nearly every other tool needs a `profileId` or an
   `accountId`, and `whoami` returns both, plus what each platform supports.
+</Note>
+
+## Search
+
+| Tool | | What it does |
+| --- | --- | --- |
+| `search` | read | One keyword across everything the account holds: posts, conversations (by contact **and** by what was said inside them), accounts, profiles, media, comment→DM rules, sequences, broadcasts, playbooks. Returns short results with an id and a link. |
+| `fetch` | read | Read one result in full from its id — a conversation with its recent messages, a post with its per-platform targets and errors, a published post with its metrics. |
+
+<Note>
+  These two names are fixed by OpenAI: ChatGPT connectors look for `search` and
+  `fetch` to look things up and cite them. Every client gets them all the same —
+  nothing else searches inside message text.
 </Note>
 
 ## Profiles

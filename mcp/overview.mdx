@@ -1,6 +1,6 @@
 ---
 title: "MCP server"
-description: "Give Claude, Cursor, VS Code or any MCP client the ability to publish, read and reply on your social accounts."
+description: "Give Claude, ChatGPT, Cursor, VS Code or any MCP client the ability to publish, read and reply on your social accounts."
 ---
 
 PlugKit ships a hosted **MCP server**: the same capabilities as the REST API,
@@ -22,6 +22,9 @@ https://api.plugkit.co/mcp
 <CardGroup cols={2}>
   <Card title="Claude" icon="message" href="/mcp/clients#claude-web-desktop-mobile">
     Customize → Connectors → Add → Custom connector → paste the URL.
+  </Card>
+  <Card title="ChatGPT" icon="sparkles" href="/mcp/clients#chatgpt">
+    Developer mode → Apps & Connectors → Create → paste the URL.
   </Card>
   <Card title="Claude Code" icon="terminal" href="/mcp/clients#claude-code">
     `claude mcp add -t http plugkit https://api.plugkit.co/mcp`
@@ -105,7 +108,7 @@ the profiles, accounts, posts and conversations of the PlugKit user it acts for.
   <Card title="Connections" icon="plug">
     Hand the user an OAuth link to connect a new account, or disconnect one.
   </Card>
-  <Card title="All 77 tools" icon="wrench" href="/mcp/tools">
+  <Card title="All 78 tools" icon="wrench" href="/mcp/tools">
     The full reference, plus the three ready-made workflows.
   </Card>
 </CardGroup>
