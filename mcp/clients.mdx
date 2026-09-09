@@ -51,34 +51,35 @@ to paste unless you want one.
 
 ## ChatGPT
 
-ChatGPT calls them *connectors* too, and takes the same URL — but custom
-connectors live behind **developer mode**, which is off until you turn it on.
+ChatGPT takes the same URL — but a custom MCP server is a *developer-mode
+plugin* there, and the switch is not where most people look for it.
 
 <Steps>
   <Step title="Turn developer mode on">
-    In ChatGPT: [Settings → Apps & Connectors](https://chatgpt.com/#settings/Connectors)
-    → **Advanced settings** → **Developer mode**.
+    In ChatGPT: **Settings → Security and login → Developer mode**. Not under
+    Apps or Connectors. Without it, the **+** button in the next step does not
+    exist.
   </Step>
-  <Step title="Create the connector">
-    Back on **Apps & Connectors**, click **Create**. Name it `PlugKit`, paste
-    `https://api.plugkit.co/mcp` as the MCP server URL, and pick **OAuth** as the
-    authentication. Leave the client id and secret empty — PlugKit registers
-    ChatGPT itself.
+  <Step title="Open the plugins screen">
+    Go to [chatgpt.com/plugins](https://chatgpt.com/plugins) and click the **+**
+    in the top right.
   </Step>
-  <Step title="Approve">
+  <Step title="Fill in the connection">
+    Name it `PlugKit`, give it any description, paste
+    `https://api.plugkit.co/mcp` as the MCP server URL, and pick **OAuth**.
+    Leave client id and secret empty — PlugKit registers ChatGPT itself.
+  </Step>
+  <Step title="Approve, then use it">
     ChatGPT opens PlugKit: sign in if needed, pick read-only or full access, and
-    approve.
-  </Step>
-  <Step title="Use it">
-    In a new chat, open the **+** menu and select **PlugKit**. Ask *"search my
-    PlugKit account for the conversation about pricing"* — it should call
-    `search`, then `fetch` on the result.
+    approve. In a new chat, open the **+** menu and select **PlugKit**. Ask
+    *"search my PlugKit account for the conversation about pricing"* — it should
+    call `search`, then `fetch` on the result.
   </Step>
 </Steps>
 
 <Note>
-  Custom connectors need the ChatGPT **web** app and a paid plan (Plus, Pro,
-  Business, Enterprise or Edu). They are not available on the free plan.
+  Developer mode needs the ChatGPT **web** app and a paid plan (Plus, Pro,
+  Business, Enterprise or Edu). It is not available on the free plan.
 </Note>
 
 <Note>
