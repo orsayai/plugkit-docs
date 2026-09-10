@@ -77,10 +77,11 @@ Tools marked **write** are hidden entirely from a session granted `mcp:read`.
 | `get_conversation` | read | One conversation (contact, account, platform). |
 | `list_messages` | read | History of a conversation with direction and delivery status. |
 | `list_instagram_threads` | read | Raw Instagram threads with participant IGSIDs — to find a contact the inbox doesn't know yet. |
+| `send_dm` | write | DM someone by name, @handle or phone number — no conversation id. Returns the matches instead of sending when several contacts fit. |
 | `send_message` | write | Reply in an existing conversation. Immediate and irreversible. |
 | `create_conversation` | write | Open a thread with a contact identified by their platform id. |
 | `sync_conversations` | write | Pull conversations and messages from the platform API when the inbox looks stale. |
-| `send_direct_message` | write | Send straight to a platform identifier, bypassing the inbox. Fallback path. |
+| `send_direct_message` | write | Low-level escape hatch: send straight to a platform identifier, storing nothing in the inbox. |
 
 ## Analytics
 
