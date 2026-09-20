@@ -1,6 +1,6 @@
 ---
 title: "Tools & workflows"
-description: "The 78 tools and 3 ready-made workflows exposed by the PlugKit MCP server."
+description: "The 103 tools and 3 ready-made workflows exposed by the PlugKit MCP server."
 ---
 
 Every tool maps to the REST API you already know — same vocabulary, same ids.
@@ -47,6 +47,8 @@ Tools marked **write** are hidden entirely from a session granted `mcp:read`.
 | `disconnect_account` | write | Disconnect and wipe the token. Posts and conversations are kept. |
 | `subscribe_instagram_webhooks` | write | Re-subscribe an Instagram account to Meta webhooks so DMs arrive in real time. |
 | `list_message_templates` | read | WhatsApp templates the business has had approved — the only thing that sends past the 24h window. |
+| `get_publish_options` | read | TikTok only: what that creator's account allows right now — the privacy levels it accepts, and which of comment / duet / stitch its own settings already disable. Read it before `create_post`; TikTok refuses any other value. |
+| `subscribe_facebook_webhooks` | write | Re-apply the current webhook fields to a connected Facebook Page, including `message_echoes`, which surfaces replies written from the Meta inbox. For Pages connected before those fields existed. No re-authorization needed. |
 
 ## Posts
 
@@ -58,11 +60,13 @@ Tools marked **write** are hidden entirely from a session granted `mcp:read`.
 | `update_post` | write | Edit or reschedule a draft/scheduled post. Published posts are frozen. |
 | `publish_post` | write | Publish now: a draft, a scheduled post brought forward, or a retry (already-published targets are skipped, so no duplicates). |
 | `delete_post` | write | Delete on PlugKit and cancel the schedule. Does not unpublish what's already live. |
+| `unpublish_post` | write | Take a post back off the platform. The opposite of `delete_post`, which only removes it from PlugKit and leaves it live. Threads can undo a publication, Instagram and TikTok cannot. Permanent: ask first. |
 | `upload_media` | write | Re-host a file from a URL you already have, and return the PlugKit URL. |
 | `create_media_upload` | write | Get a one-shot upload link — the assistant sends the bytes itself, or hands you the browser page when it has no shell. Any size, no third-party file host. |
 | `check_media_upload` | read | Confirm the file actually landed before publishing. |
 | `list_media` | read | The account's media library — start here when a post needs a photo or a video, and pass the ids to `create_post` as `mediaIds`. |
 | `delete_media` | write | Remove a file from the library. Refused while an unpublished post still uses it. |
+| `open_media_uploader` | read | Show a drop zone in the conversation, so files on the person's machine reach you without leaving the chat. Several at once, and it stays open for more. Use it instead of `create_media_upload` when you cannot run shell commands. |
 
 <Info>
   WhatsApp and Telegram don't do posts — only messages. `whoami` returns the
@@ -95,6 +99,7 @@ platform call. See [Analytics](/guides/analytics).
 | `get_analytics_timeseries` | read | One metric by day, week or month, optionally split by platform. |
 | `get_best_times_to_post` | read | Weekday × hour engagement grid — feed it into `scheduledFor` instead of guessing. |
 | `get_follower_stats` | read | Follower history and growth per account. |
+| `get_analytics_by_account` | read | One row per connected account over the window, including the accounts that published nothing. Use it whenever two accounts share a platform. |
 | `sync_analytics` | write | Pull an account's latest posts now instead of waiting for the cycle. Debounced 15s. |
 
 ## Comments & live reads
@@ -137,6 +142,19 @@ Facebook Pages and Threads, in one feed. These take the engagement `_id` from
   hidden or deleted.
 </Warning>
 
+## Playbooks
+
+Ready-made setups installed in one call on a connected Instagram or Facebook
+account. The catalog is on [plugkit.co/playbooks](https://www.plugkit.co/playbooks/).
+
+| Tool | | What it does |
+| --- | --- | --- |
+| `list_playbooks` | read | What can be installed: comment-to-DM lead magnet, story lead magnet, waitlist, welcome message. Start here before building a comment automation by hand. |
+| `get_playbook` | read | The full definition: the account slots to fill, every input with its default, and the automations and sequences it will create. Read it before installing. |
+| `install_playbook` | write | Create everything the playbook describes on one account. Live from that moment, real people get real DMs: show the rendered messages first and get an explicit go-ahead. |
+| `list_playbook_installs` | read | What is already installed here, with the automations and sequences each one created and their status. |
+| `remove_playbook_install` | write | Delete what a playbook created. Pass `keepResources` to unlink the install while leaving everything running. |
+
 ## Campaigns
 
 | Tool | | What it does |
@@ -178,6 +196,14 @@ Facebook Pages and Threads, in one feed. These take the engagement `_id` from
   `status: "ACTIVE"` starts spending real money — the assistant should confirm
   the amount and the audience with you first.
 </Warning>
+
+## Shopping (Instagram)
+
+| Tool | | What it does |
+| --- | --- | --- |
+| `get_shopping_status` | read | Whether an account can tag products, and if not, exactly what is missing: no permission, an expired one, a shop Meta has not approved, or a shop with no catalog. Tagging needs a second Facebook authorization the user grants themselves, from the account card on the dashboard's Connections page. |
+| `search_shop_products` | read | Search the account's shop catalog by product name or SKU. The ids returned here are the only ones `productTags` accepts, never invent one. A product whose `taggable` is false cannot be tagged, and its Meta review status says why. |
+| `tag_products_on_post` | write | Tag products on an already published post or reel. **Replaces** the existing tags, so send the complete list. At most 20 on a photo, 30 on a reel; coordinates only apply to a photo. Instagram accepts 25 tagged posts per account per 24 hours. |
 
 ## Billing
 
