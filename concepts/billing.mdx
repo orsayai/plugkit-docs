@@ -12,15 +12,8 @@ analytics, webhooks, MCP — is included.
 | | Creator | Pro |
 | --- | --- | --- |
 | Price | **$49**/month | **$97**/month |
-| Price in euros | **€49**/month | **€97**/month |
 | Connected accounts included | 5 | 30 |
 | Beyond the quota | not allowed | billed per account |
-
-Plans can be paid in **US dollars or in euros**. To pay in euros, choose euros on
-the billing page of the dashboard before you go to checkout (through the API, send
-`"currency": "eur"` to `POST /v1/billing/checkout`). The euro price is a fixed
-price, not a conversion. The variable part of the bill, accounts beyond 30 on Pro
-and X API calls, is always charged in US dollars.
 
 ```bash
 curl https://api.plugkit.co/v1/billing/plans -H "Authorization: Bearer sk_your_key"
