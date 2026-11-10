@@ -2193,6 +2193,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "returnUrl",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -6202,7 +6210,7 @@
     },
     "/v1/webhooks": {
       "post": {
-        "description": "Events: post.published, post.partial, post.failed, message.received, message.sent, message.undelivered, account.disconnected, comment.received, comment.dm_sent, broadcast.finished, usage.threshold_reached. Each delivery is signed with `x-plugkit-signature: t=<unix>,v1=<hex>`, the HMAC-SHA256 of `<t>.<raw body>` with the endpoint secret.",
+        "description": "Events: post.published, post.partial, post.failed, message.received, message.sent, message.undelivered, account.connected, account.disconnected, comment.received, comment.dm_sent, broadcast.finished, usage.threshold_reached. Each delivery is signed with `x-plugkit-signature: t=<unix>,v1=<hex>`, the HMAC-SHA256 of `<t>.<raw body>` with the endpoint secret.",
         "operationId": "WebhookEndpointsController_create",
         "parameters": [],
         "requestBody": {
@@ -8476,6 +8484,7 @@
                 "message.received",
                 "message.sent",
                 "message.undelivered",
+                "account.connected",
                 "account.disconnected",
                 "comment.received",
                 "comment.dm_sent",
@@ -8507,6 +8516,7 @@
                 "message.received",
                 "message.sent",
                 "message.undelivered",
+                "account.connected",
                 "account.disconnected",
                 "comment.received",
                 "comment.dm_sent",
