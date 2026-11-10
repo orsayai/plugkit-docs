@@ -124,9 +124,13 @@ curl -X PATCH https://api.plugkit.co/v1/ads/AD_ACCOUNT_ID/campaigns/CAMPAIGN_ID 
 Spend and performance, for the whole account or one object:
 
 ```bash
-curl "https://api.plugkit.co/v1/ads/AD_ACCOUNT_ID/insights?campaignId=CAMPAIGN_ID&since=2026-08-01&until=2026-08-23" \
+curl "https://api.plugkit.co/v1/ads/AD_ACCOUNT_ID/insights?objectId=CAMPAIGN_ID&level=campaign&since=2026-08-01&until=2026-08-23" \
   -H "Authorization: Bearer sk_your_key"
 ```
+
+`objectId` is a campaign, ad set or ad id (omit it for the whole ad account);
+`level` is `account`, `campaign`, `adset` or `ad`. Use `since`/`until` or a
+`datePreset` such as `last_7d`.
 
 <Note>
   These are **ad** metrics — spend, impressions, CPC — and they're separate from

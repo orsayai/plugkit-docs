@@ -33,10 +33,13 @@ added later.
 | `post.partial` | Some targets published, others failed. |
 | `post.failed` | No target published. |
 | `message.received` | An inbound message landed in the inbox. |
+| `message.sent` | A message left the account **outside** PlugKit (replied from the Instagram app, Business Suite, another tool). Messages you send through the API don't fire it. |
+| `message.undelivered` | A message the platform accepted never reached the thread (Meta sometimes returns a `message_id` and then drops the message). |
 | `comment.received` | A comment arrived on one of the account's posts. |
 | `comment.dm_sent` | A [comment → DM automation](/guides/campaigns) sent its private message. |
 | `broadcast.finished` | A broadcast finished serving every recipient. |
-| `account.disconnected` | An account was disconnected, or its token died. |
+| `account.connected` | An account was connected or reconnected (end of the OAuth flow, or a token-based connection). One per account: a Facebook login granting three Pages fires three. |
+| `account.disconnected` | An account stopped working: disconnected through the API or the dashboard (`reason: "manual"`), or its token died on the platform side — password change, expired session, app removed (`reason: "reconnection_required"`). Sent once, when it flips. |
 | `usage.threshold_reached` | Pay-per-call spend passed 80% of the monthly cap — once a month, before anything pauses. |
 
 The list is closed and names are `object.past_tense`. New events are added over
@@ -57,6 +60,19 @@ Every delivery shares one envelope:
 
 `data` carries the resource in the same shape the REST API returns it, so the
 post in `post.published` is the post you'd get from `GET /v1/posts/{id}`.
+
+The other events carry a small object rather than a full resource:
+
+| Event | `data` |
+| --- | --- |
+| `message.received`, `message.sent`, `message.undelivered` | `conversationId`, `accountId`, `platform`, `message` |
+| `comment.received` | `accountId`, `platform`, `commentId`, `mediaId`, `text`, `fromId`, `fromUsername`, `parentId`, `adId` |
+| `account.connected` | `accountId`, `profileId`, `platform`, `username`, `reconnected` (boolean) |
+| `account.disconnected` | `accountId`, `profileId`, `platform`, `username`, `reason` (`manual` or `reconnection_required`) |
+
+Message and comment payloads carry `accountId` but **no `profileId`**: keep an
+`accountId → profileId` map on your side (from `account.connected` or
+`GET /accounts`) to route an event to the right customer.
 
 ## Verifying a delivery
 

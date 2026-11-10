@@ -29,7 +29,7 @@ Authorization: Bearer sk_your_key
 
 ## Key format
 
-Keys are `sk_` followed by 64 hex characters. They are **hashed** server-side —
+Keys are `sk_` followed by 64 hex characters, and they don't expire. They are **hashed** server-side —
 PlugKit only ever shows the full key **once**, at creation. Store it in a secret
 manager, never in client-side code or a git repo.
 
@@ -47,7 +47,9 @@ manager, never in client-side code or a git repo.
     `DELETE /v1/api-keys/{id}` — immediately invalidates it.
   </Card>
   <Card title="Rotate" icon="rotate">
-    Create a new key, switch your app over, then revoke the old one.
+    Zero downtime: create a new key, switch your app over, then revoke the old
+    one. Or `POST /v1/api-keys/{id}/roll`, which returns a new value once and
+    revokes the old key **immediately**.
   </Card>
 </CardGroup>
 
@@ -64,9 +66,11 @@ manager, never in client-side code or a git repo.
 | `403 Forbidden` | Authenticated but not allowed for this resource. |
 | `402 Payment Required` | The plan's account quota is reached, or a spend cap blocks a billable call — see [Plans & billing](/concepts/billing). |
 | `404 Not Found` | The resource doesn't exist **or** isn't owned by your account. |
-| `429 Too Many Requests` | Rate limited. Back off and retry. |
+| `429 Too Many Requests` | Rate limited. Wait for `retry-after` seconds and retry. |
 
 <Note>
   `404` is intentionally returned instead of `403` when you request a resource
   that belongs to another account, so keys can't probe for existence.
 </Note>
+
+Every error shares one body — see [API conventions](/concepts/api-conventions#errors).

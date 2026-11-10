@@ -1,6 +1,6 @@
 ---
 title: "Messaging"
-description: "One inbox across Instagram, Facebook, WhatsApp and Telegram."
+description: "One inbox across Instagram, Facebook and WhatsApp."
 ---
 
 Every messaging account's inbox is exposed as **conversations** and
@@ -18,8 +18,9 @@ curl "https://api.plugkit.co/v1/inbox/conversations?accountId=ACCOUNT_ID" \
   -H "Authorization: Bearer sk_your_key"
 ```
 
-Each row carries the contact, the account, the platform, the last message and
-whether it's unread.
+The response is `{ "data": [ … ], "pagination": { … } }`. Each row carries its
+`id`, the contact, the account, the platform, the last message and whether it's
+unread. Conversations and messages use `id` (not `_id`).
 
 ## Read a conversation
 
@@ -43,7 +44,8 @@ curl -X POST https://api.plugkit.co/v1/inbox/conversations/CONVERSATION_ID/messa
   -d '{ "text": "Thanks for reaching out! 👋" }'
 ```
 
-Sending is immediate and public to the recipient — there's no undo. Show the
+Send an `Idempotency-Key` header so a network retry never sends the message
+twice. Sending is immediate and public to the recipient — there's no undo. Show the
 exact text to whoever is approving it before you call this.
 
 ## Start a conversation
@@ -56,7 +58,7 @@ curl -X POST https://api.plugkit.co/v1/inbox/conversations \
 ```
 
 The identifier depends on the platform: a phone number in international format
-on WhatsApp, an IGSID on Instagram, a chat id on Telegram.
+on WhatsApp, an IGSID on Instagram.
 
 There's also a direct path that bypasses the inbox entirely, when you hold the
 platform id and don't need the thread:
@@ -76,8 +78,6 @@ messages within **24 hours of the contact's last message**. Past that:
 - **Instagram / Facebook**: the window is closed. The single exception is a
   private reply to a comment, once per comment, within 7 days — which is what
   [comment → DM automations](/guides/campaigns) run on.
-
-Telegram has no such limit.
 
 ## Sync from the platform
 
@@ -99,6 +99,7 @@ carries the conversation and the message, so you can route it straight into your
 own system — see [Webhooks](/guides/webhooks).
 
 <Warning>
-  X DMs need elevated paid API access and aren't exposed. Broadcasts exclude X
+  Telegram inbound messages aren't ingested yet, so Telegram bots don't appear
+  in the inbox. X DMs need elevated paid API access and aren't exposed. Broadcasts exclude X
   for the same reason — see [Campaigns](/guides/campaigns).
 </Warning>

@@ -1,0 +1,101 @@
+---
+title: "API conventions"
+description: "Ids, errors, pagination, idempotency and rate limits — the rules every endpoint follows."
+icon: "book"
+---
+
+## Base URL and auth
+
+```
+https://api.plugkit.co/v1
+Authorization: Bearer sk_your_key
+Content-Type: application/json
+```
+
+See [Authentication](/authentication) for keys.
+
+## Ids
+
+Profiles, accounts, posts and engagement items return their id as **`_id`**.
+Conversations and messages return it as **`id`**. Single resources come wrapped
+in a key named after them (`{ "post": { … } }`, `{ "account": { … } }`); lists
+come as a named array, plus `pagination` on paginated lists
+(`{ "posts": [ … ], "pagination": … }`). Conversations use `data` instead of a
+named array.
+
+## Unknown fields are rejected
+
+Request bodies are validated strictly. A field the endpoint doesn't know — a
+typo, or an option from another endpoint — returns `400` with
+`code: "validation_failed"` instead of being silently ignored. The
+[API Reference](/api-reference) lists the accepted fields of every endpoint.
+
+## Errors
+
+Every error, whatever the status, has the same body:
+
+```json
+{
+  "error": "Human-readable message.",
+  "type": "invalid_request_error",
+  "code": "validation_failed",
+  "param": "content",
+  "details": { "fields": ["content must be a string"] }
+}
+```
+
+| Field | Notes |
+| --- | --- |
+| `error` | Human-readable message. Don't branch on it. |
+| `type` | `invalid_request_error` (400), `authentication_error` (401), `billing_error` (402), `permission_error` (403), `not_found` (404), `rate_limit_error` (429), `platform_error` (502), `api_error` (500). |
+| `code` | Stable machine code — branch on this. |
+| `param` | The request field at fault, when there is one. |
+| `platform`, `platformError` | On `platform_error`: which platform refused, and its raw error, verbatim. |
+| `details` | Extra structured context (per-field validation errors…). |
+
+## Pagination
+
+List endpoints take `page` (from 1) and `limit` (default 20, max 100) and return:
+
+```json
+"pagination": { "page": 1, "limit": 20, "total": 134, "pages": 7, "hasMore": true }
+```
+
+The [engagement feed](/guides/engagement) is the exception: it is paginated by
+cursor. Pass the returned `pagination.nextCursor` as `before` to get the next
+page.
+
+## Idempotency
+
+Send an `Idempotency-Key` header (any unique string, e.g. a UUID) to make a
+retry safe. A second request with the same key gets the first response back
+instead of acting twice. Keys are kept **24 hours**. Reusing a key with a
+different body is refused.
+
+Supported on the calls that act on a platform:
+
+- `POST /posts`
+- `POST /posts/{id}/publish`
+- `POST /inbox/conversations/{id}/messages`
+
+## Rate limits
+
+Limits apply over a one-minute window, **per connected account** when the
+request targets one (an `accountId` in the path, query or body, the targets of a
+post, the account of a conversation), and per PlugKit account otherwise (all
+your keys together):
+
+| Bucket | Limit |
+| --- | --- |
+| All requests | 300 / min |
+| Writes (`POST`, `PATCH`, `PUT`, `DELETE`) | 60 / min |
+| Publishing, sending messages, replying to comments | 20 / min |
+
+Every response carries `x-ratelimit-limit`, `x-ratelimit-remaining` and
+`x-ratelimit-reset` (Unix seconds). A `429` carries `retry-after` (seconds) and
+`details.scope` (`account` or `user`). A post published to several accounts
+counts once on each of them.
+
+On top of these, each platform enforces its own quotas (for example 100
+Instagram publications per account per 24 hours). A platform quota error comes
+back as a `429` with `retry-after` when the platform says how long to wait.

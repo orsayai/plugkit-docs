@@ -1,0 +1,52 @@
+---
+title: "Bluesky"
+description: "Publish to Bluesky, answer replies and mentions, and read post analytics."
+icon: "cloud"
+---
+
+Bluesky connects an account through atproto OAuth, like the other platforms.
+
+<CardGroup cols={2}>
+  <Card title="Publish" icon="pen">Text, 1–4 images or one video.</Card>
+  <Card title="Replies" icon="comment-dots">Read and reply; mentions.</Card>
+  <Card title="Analytics" icon="chart-line">Likes, reposts, replies, followers.</Card>
+</CardGroup>
+
+## Connect
+
+```bash
+curl "https://api.plugkit.co/v1/connect/bluesky?profileId=YOUR_PROFILE_ID" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+Open the returned `authUrl` and sign in. For an account hosted outside
+bsky.social, pass its handle: `&handle=alice.example.com`.
+
+## Publish
+
+```bash
+curl -X POST https://api.plugkit.co/v1/posts \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "profileId": "PROFILE_ID", "accountIds": ["ACCOUNT_ID"],
+        "content": "Hello Bluesky 🦋", "publishNow": true }'
+```
+
+- **300 characters** max (counted as graphemes) — refused above, never truncated.
+- Text only, **or** 1 to 4 images, **or** one video (100 MB max). Large images
+  are recompressed to fit Bluesky's 1 MB limit.
+- A link in the text gets a preview card automatically.
+- A published post can be removed with `POST /posts/{id}/unpublish`.
+
+## Replies and mentions
+
+Replies and mentions show up in the [engagement feed](/guides/engagement), where
+you can answer them. Bluesky has no hide or delete for other people's replies.
+
+## Analytics
+
+Likes, reposts and replies per post, plus followers. Bluesky exposes no views or
+impressions.
+
+## Not supported
+
+No DMs in PlugKit yet: no inbox, broadcasts or sequences.

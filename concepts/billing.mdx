@@ -26,6 +26,16 @@ day 7. The seven days start when the card is saved. During the trial you get
 your plan's full account quota. Cancel before day 7 and you pay nothing;
 otherwise the first payment is taken at the end of the trial.
 
+### Annual billing
+
+Pass `"interval": "year"` to `POST /billing/checkout` to pay yearly: 12 months
+for the price of 10. Monthly is the default.
+
+<Note>
+  Creator subscriptions started before 2026-10-12 keep their original price of
+  $29/month.
+</Note>
+
 ### Creator is a hard wall
 
 On Creator, the 6th account isn't billed as an extra — it is **refused**, with a

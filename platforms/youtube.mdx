@@ -39,12 +39,10 @@ curl -X POST https://api.plugkit.co/v1/posts \
         "privacy": "public", "publishNow": true }'
 ```
 
-<Warning>
-  Until your Google/YouTube app is **verified**, uploads land as **`private`**.
-  This is a Google requirement — publish publicly once verification is granted.
-</Warning>
-
-`privacy` accepts `public`, `unlisted` or `private`.
+`privacy` accepts `public`, `unlisted` or `private`. YouTube-specific options
+(`youtubeTags`, `youtubeCategoryId`, `madeForKids`, `notifySubscribers`,
+`aiGenerated`) are listed in [Publishing](/guides/publishing#platform-options).
+A `thumbnail` on the video's media item sets a custom thumbnail.
 
 ## Analytics
 
@@ -59,10 +57,17 @@ outside PlugKit are picked up too.
   connect. A channel that hides its subscriber count returns `null`, not `0`.
 </Note>
 
+## Comments
+
+YouTube comments show up in the [engagement feed](/guides/engagement): read,
+reply, hide and delete. Replying and moderating need the `youtube.force-ssl`
+permission; a channel connected before it was offered must reconnect.
+
 ## Not supported
 
-Messaging and comments aren't exposed.
+Messaging isn't exposed (YouTube has no DMs).
 
 ## Permissions
 
-Scopes: `youtube.upload` (publishing) and `youtube.readonly` (analytics).
+Scopes: `youtube.upload` (publishing), `youtube.readonly` (analytics, reading
+comments) and `youtube.force-ssl` (replying to and moderating comments).

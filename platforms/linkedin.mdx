@@ -1,0 +1,46 @@
+---
+title: "LinkedIn"
+description: "Publish to a member profile or a company Page."
+icon: "linkedin"
+---
+
+LinkedIn is a **publishing** integration.
+
+<CardGroup cols={2}>
+  <Card title="Publish" icon="pen">Text, 1–20 images, one video, or a poll.</Card>
+  <Card title="Visibility" icon="eye">Public, connections, or signed-in members.</Card>
+</CardGroup>
+
+## Connect
+
+```bash
+# the member's own profile
+curl "https://api.plugkit.co/v1/connect/linkedin?profileId=YOUR_PROFILE_ID" \
+  -H "Authorization: Bearer sk_your_key"
+
+# company Pages the member administers
+curl "https://api.plugkit.co/v1/connect/linkedin?profileId=YOUR_PROFILE_ID&target=page" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+Open the returned `authUrl` and approve. With `target=page`, each Page picked
+becomes its own account.
+
+## Publish
+
+```bash
+curl -X POST https://api.plugkit.co/v1/posts \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "profileId": "PROFILE_ID", "accountIds": ["ACCOUNT_ID"],
+        "content": "We are hiring.", "linkedinVisibility": "PUBLIC", "publishNow": true }'
+```
+
+- Text only, **or** 1 to 20 images, **or** one video.
+- `linkedinVisibility`: `PUBLIC`, `CONNECTIONS` or `LOGGED_IN`.
+- `poll` (`question`, 2–4 `options`, duration rounded to 1, 3 or 7 days) on a
+  post without media.
+
+## Not supported
+
+LinkedIn exposes no messaging API, and no analytics at this access level: no
+inbox, no comments, no metrics.

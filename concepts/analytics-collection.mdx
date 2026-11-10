@@ -31,7 +31,7 @@ backs off as it settles:
 | --- | --- | --- |
 | Discover new posts on an account | every 6h | every 90 min |
 | Posts under 48h old | hourly | every 30 min |
-| Posts under 30 days | every 6h | hourly |
+| Posts under 30 days | every 6h | every 3h |
 | Posts over 30 days | weekly | weekly |
 | Follower count | daily | daily |
 
@@ -86,8 +86,10 @@ clamped, and the response says so.
 | **TikTok** | views, likes, comments, shares | ✅ | ✅ |
 | **YouTube** | views, likes, comments | ✅ | ✅ |
 | **X** | likes, replies, reposts, impressions | ✅ | — |
+| **Threads** | views, likes, replies, reposts, quotes, shares | ✅ | ✅ |
+| **Bluesky** | likes, reposts, replies (Bluesky exposes no views) | ✅ | ✅ |
 
-WhatsApp and Telegram have no posts, so they have no analytics.
+WhatsApp has no posts, so it has no analytics. Telegram and LinkedIn publish but expose no metrics here.
 
 A few platform truths that shape what you'll see:
 

@@ -23,7 +23,8 @@
             "pages": [
               "index",
               "quickstart",
-              "authentication"
+              "authentication",
+              "concepts/api-conventions"
             ]
           },
           {
@@ -47,9 +48,12 @@
             "pages": [
               "platforms/instagram",
               "platforms/facebook",
+              "platforms/threads",
               "platforms/tiktok",
               "platforms/youtube",
               "platforms/x",
+              "platforms/linkedin",
+              "platforms/bluesky",
               "platforms/whatsapp",
               "platforms/telegram",
               "platforms/meta-ads",
@@ -60,12 +64,12 @@
             "group": "Guides",
             "pages": [
               "guides/publishing",
-              "guides/reel-studio",
               "guides/messaging",
               "guides/engagement",
               "guides/campaigns",
               "guides/analytics",
-              "guides/webhooks"
+              "guides/webhooks",
+              "guides/multi-tenant"
             ]
           }
         ]

@@ -45,7 +45,8 @@ print(r.json())
 
 ## 3. Create a profile
 
-A profile groups the accounts you connect. Create one and keep its `id`:
+A profile groups the accounts you connect. Create one and keep its `_id`
+(resources return their id as `_id` — see [API conventions](/concepts/api-conventions)):
 
 ```bash
 curl -X POST https://api.plugkit.co/v1/profiles \
@@ -64,7 +65,8 @@ curl "https://api.plugkit.co/v1/connect/instagram?profileId=YOUR_PROFILE_ID" \
 ```
 
 You get back an `authUrl` — open it in a browser, approve, and the account is
-created. Every platform has its own page under **Platforms**, and the shared
+created. Fetch it with `GET /v1/accounts?profileId=YOUR_PROFILE_ID` to get its
+`_id`. Every platform has its own page under **Platforms**, and the shared
 model is in [Profiles & accounts](/concepts/profiles-and-accounts). You can also
 do this in two clicks from the dashboard's **Connections** page.
 
@@ -82,6 +84,10 @@ curl -X POST https://api.plugkit.co/v1/posts \
     "publishNow": true
   }'
 ```
+
+The call returns right away with `status: "publishing"`; poll
+`GET /v1/posts/{id}` or subscribe to [webhooks](/guides/webhooks) to know when
+it's live.
 
 ## 6. Read the results
 
