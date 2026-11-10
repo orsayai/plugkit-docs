@@ -37,11 +37,46 @@ Your PlugKit account ── API key (server-side only)
 
 Two options:
 
-**From your UI.** Call `GET /connect/{platform}?profileId=…` from your server and
-send your customer to the returned `authUrl`. Once they approve, the platform
-redirects to a PlugKit confirmation page. PlugKit doesn't redirect back to your
-app, so open the `authUrl` in a popup or a new tab and close it when you detect
-the new account (see below).
+**From your UI.** Call `GET /connect/{platform}?profileId=…&returnUrl=…` from
+your server and send your customer to the returned `authUrl`. Once they approve,
+PlugKit redirects their browser to your `returnUrl` with the result in the query
+string:
+
+```bash
+curl -G "https://api.plugkit.co/v1/connect/instagram" \
+  -H "Authorization: Bearer sk_your_key" \
+  --data-urlencode "profileId=PROFILE_ID" \
+  --data-urlencode "returnUrl=https://app.example.com/integrations/done?customer=4812"
+# → { "authUrl": "https://www.instagram.com/oauth/authorize?…" }
+```
+
+```
+https://app.example.com/integrations/done?customer=4812&status=success&platform=instagram&profileId=PROFILE_ID&accountId=ACCOUNT_ID&count=1
+https://app.example.com/integrations/done?customer=4812&status=error&platform=instagram&profileId=PROFILE_ID&error=Authorization+refused%3A+…&code=…
+```
+
+| Parameter | Meaning |
+| --- | --- |
+| `status` | `success` or `error`. |
+| `platform` | The platform that was connected. |
+| `profileId` | The profile the account landed in. |
+| `accountId` | The connected account, when exactly one was connected. |
+| `count` | How many accounts were connected (a Facebook login granting three Pages gives `3`, without `accountId`). |
+| `error`, `code` | On `status=error`: a readable message and, when available, the API error code. |
+
+Your existing query parameters are kept. `returnUrl` must be `https` (`http` is
+accepted for `localhost`), at most 1,024 characters. PlugKit signs it in the
+OAuth `state`, so it can't be swapped for another site along the way.
+
+<Note>
+  Treat the redirect as a signal, not as proof: anyone can open your
+  `returnUrl` with made-up parameters. Confirm with `GET /accounts/{accountId}`
+  (or the `account.connected` webhook) before trusting it. `returnUrl` isn't
+  available for Bluesky yet. Telegram and WhatsApp numbers connected by token
+  don't go through a redirect.
+</Note>
+
+Without `returnUrl`, the flow ends on a PlugKit confirmation page.
 
 **With a connect link.** `POST /connect-invites` with the `profileId` returns a
 `url` valid 30 days. Send it to your customer: they pick their platforms on a
@@ -56,34 +91,31 @@ curl -X POST https://api.plugkit.co/v1/connect-invites \
 
 ## After the connection
 
-There is no `account.connected` webhook. Poll the profile's accounts while your
-customer is in the flow (every few seconds), then stop:
+Each new or reconnected account fires an [`account.connected`](/guides/webhooks)
+webhook carrying `accountId`, `profileId` and `platform`. One authorization can
+create several accounts (a Facebook login granting three Pages gives three
+accounts, so three events).
 
-```bash
-curl "https://api.plugkit.co/v1/accounts?profileId=PROFILE_ID" \
-  -H "Authorization: Bearer sk_your_key"
-```
-
-One authorization can create several accounts (a Facebook login granting three
-Pages gives three accounts).
-
-Tokens can die on the platform side (password change, revoked app). Those
-accounts switch to `needsReconnection: true` **without** a webhook — check
-accounts periodically and before publishing, and send the customer back through
-`GET /connect/{platform}?profileId=…&accountId=…` to reconnect the same account.
+Tokens can die on the platform side (password change, revoked app). The account
+switches to `needsReconnection: true` and an `account.disconnected` webhook
+fires with `reason: "reconnection_required"` — once, when it flips. Send the
+customer back through `GET /connect/{platform}?profileId=…&accountId=…` to
+reconnect the same account (its posts and conversations are kept).
 
 ## Routing webhooks
 
 Register one [webhook](/guides/webhooks) endpoint for your whole account.
-Message, comment and account events carry `accountId` but not `profileId`:
-keep an `accountId → profileId → your customer` map, refreshed from
-`GET /accounts`. Post events carry the full post, `profileId` included.
+Account events and post events carry `profileId`. Message and comment events
+carry `accountId` only: keep an `accountId → profileId → your customer` map,
+filled from `account.connected` and refreshed from `GET /accounts`.
 
 ## Limits to plan for
 
-- **Rate limits are shared** by all your customers: 20 publications / messages /
-  comment replies per minute, 60 writes and 300 requests per minute in total.
-  Queue publications on your side and honour `retry-after`. See
+- **Rate limits are per connected account**: each of your customers' accounts
+  gets its own 20 publications / messages / comment replies per minute, so one
+  busy customer doesn't slow the others down. Requests that don't target an
+  account (lists without `accountId`, profile management…) share your account's
+  budget. Honour `retry-after`. See
   [API conventions](/concepts/api-conventions#rate-limits).
 - **Platform quotas** apply per connected account (e.g. 100 Instagram
   publications per 24 hours).

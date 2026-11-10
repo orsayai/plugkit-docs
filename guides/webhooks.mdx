@@ -38,17 +38,9 @@ added later.
 | `comment.received` | A comment arrived on one of the account's posts. |
 | `comment.dm_sent` | A [comment → DM automation](/guides/campaigns) sent its private message. |
 | `broadcast.finished` | A broadcast finished serving every recipient. |
-| `account.disconnected` | An account was disconnected through the API or the dashboard (`DELETE /accounts/{id}`). |
+| `account.connected` | An account was connected or reconnected (end of the OAuth flow, or a token-based connection). One per account: a Facebook login granting three Pages fires three. |
+| `account.disconnected` | An account stopped working: disconnected through the API or the dashboard (`reason: "manual"`), or its token died on the platform side — password change, expired session, app removed (`reason: "reconnection_required"`). Sent once, when it flips. |
 | `usage.threshold_reached` | Pay-per-call spend passed 80% of the monthly cap — once a month, before anything pauses. |
-
-<Warning>
-  `account.disconnected` is **not** sent when a platform revokes a token on its
-  own (password change, expired session, app removed). Those accounts flip to
-  `isActive: false` / `needsReconnection: true` with a `disconnectedReason`.
-  Poll `GET /accounts` (for example hourly, and before publishing) to catch
-  them. There is no `account.connected` event either — see
-  [Building on PlugKit](/guides/multi-tenant#after-the-connection).
-</Warning>
 
 The list is closed and names are `object.past_tense`. New events are added over
 time; existing ones are never renamed.
@@ -75,11 +67,12 @@ The other events carry a small object rather than a full resource:
 | --- | --- |
 | `message.received`, `message.sent`, `message.undelivered` | `conversationId`, `accountId`, `platform`, `message` |
 | `comment.received` | `accountId`, `platform`, `commentId`, `mediaId`, `text`, `fromId`, `fromUsername`, `parentId`, `adId` |
-| `account.disconnected` | `accountId`, `platform`, `username` |
+| `account.connected` | `accountId`, `profileId`, `platform`, `username`, `reconnected` (boolean) |
+| `account.disconnected` | `accountId`, `profileId`, `platform`, `username`, `reason` (`manual` or `reconnection_required`) |
 
-These payloads carry `accountId` but **no `profileId`**: keep an
-`accountId → profileId` map on your side (from `GET /accounts`) to route an
-event to the right customer.
+Message and comment payloads carry `accountId` but **no `profileId`**: keep an
+`accountId → profileId` map on your side (from `account.connected` or
+`GET /accounts`) to route an event to the right customer.
 
 ## Verifying a delivery
 

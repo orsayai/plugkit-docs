@@ -51,6 +51,7 @@ Useful query parameters on `GET /connect/{platform}`:
 | Parameter | Effect |
 | --- | --- |
 | `accountId` | Reconnect that account (its token is replaced) instead of creating a new one. |
+| `returnUrl=https://…` | Redirect the browser to your app at the end of the flow, with the result in the query string. See [Building on PlugKit](/guides/multi-tenant#connecting-your-customers-accounts). |
 | `switchAccount=true` | Instagram: ask for credentials again, to connect a different account than the one open in the browser. |
 | `handle` | Bluesky: the handle of an account hosted outside bsky.social. |
 | `coexistence=true` | WhatsApp: keep the number in the WhatsApp Business app. |

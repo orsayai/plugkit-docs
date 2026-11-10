@@ -80,8 +80,10 @@ Supported on the calls that act on a platform:
 
 ## Rate limits
 
-Limits apply per PlugKit account (all your keys together), over a one-minute
-window:
+Limits apply over a one-minute window, **per connected account** when the
+request targets one (an `accountId` in the path, query or body, the targets of a
+post, the account of a conversation), and per PlugKit account otherwise (all
+your keys together):
 
 | Bucket | Limit |
 | --- | --- |
@@ -90,7 +92,9 @@ window:
 | Publishing, sending messages, replying to comments | 20 / min |
 
 Every response carries `x-ratelimit-limit`, `x-ratelimit-remaining` and
-`x-ratelimit-reset` (Unix seconds). A `429` carries `retry-after` (seconds).
+`x-ratelimit-reset` (Unix seconds). A `429` carries `retry-after` (seconds) and
+`details.scope` (`account` or `user`). A post published to several accounts
+counts once on each of them.
 
 On top of these, each platform enforces its own quotas (for example 100
 Instagram publications per account per 24 hours). A platform quota error comes
