@@ -38,7 +38,7 @@ document the exact flow and specifics for each.
 
 | Pattern | Platforms | How |
 | --- | --- | --- |
-| **OAuth redirect** | Instagram, Facebook, TikTok, YouTube, X, Meta Ads | `GET /connect/{platform}?profileId=…` → open the returned `authUrl` → the platform redirects back and PlugKit stores the token |
+| **OAuth redirect** | Instagram, Facebook, Threads, TikTok, YouTube, X, LinkedIn, Bluesky, Meta Ads, Google Ads | `GET /connect/{platform}?profileId=…` → open the returned `authUrl` → the platform redirects back and PlugKit stores the token |
 | **Embedded Signup** | WhatsApp | `GET /connect/whatsapp?profileId=…` — same shape, but the user brings their own number and WhatsApp Business Account |
 | **Bot token** | Telegram | `POST /connect/telegram` with a token from @BotFather |
 
@@ -46,20 +46,59 @@ One authorization can create **several accounts**: a Facebook login granting
 three Pages produces three accounts, and the same screen can grant ad accounts
 too.
 
+Useful query parameters on `GET /connect/{platform}`:
+
+| Parameter | Effect |
+| --- | --- |
+| `accountId` | Reconnect that account (its token is replaced) instead of creating a new one. |
+| `switchAccount=true` | Instagram: ask for credentials again, to connect a different account than the one open in the browser. |
+| `handle` | Bluesky: the handle of an account hosted outside bsky.social. |
+| `coexistence=true` | WhatsApp: keep the number in the WhatsApp Business app. |
+
+### Connect links for your clients
+
+When the person who owns the social accounts isn't you, create a **connect
+link** for a profile and send it to them. They open it, pick the platforms, and
+the accounts land in that profile — no PlugKit login on their side:
+
+```bash
+curl -X POST https://api.plugkit.co/v1/connect-invites \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "profileId": "PROFILE_ID" }'
+# → { "url": "https://…", "expiresAt": "…" }
+```
+
+The link is valid 30 days. Creating a new one revokes the previous link of that
+profile; `GET /connect-invites?profileId=…` tells you whether one is active and
+`DELETE /connect-invites?profileId=…` revokes it.
+
 ## Managing accounts
 
 ```bash List accounts
-curl "https://api.plugkit.co/v1/accounts?status=CONNECTED" \
+curl "https://api.plugkit.co/v1/accounts?profileId=PROFILE_ID&status=active" \
   -H "Authorization: Bearer sk_your_key"
 ```
+
+Filters: `profileId`, `platform`, `status` (`active` or `disconnected`), plus
+`page`/`limit`. Each account exposes its `_id`, `platform`, `username`,
+`displayName`, the `profileId` it belongs to, and its health — never its access
+token:
+
+| Field | Meaning |
+| --- | --- |
+| `isActive` | The account can publish and message. |
+| `needsReconnection` | The opposite of `isActive`: disconnected on purpose, or its token died (password change, expired session…). |
+| `disconnectedReason` | Present when PlugKit knows why. |
 
 ```bash Disconnect
 curl -X DELETE https://api.plugkit.co/v1/accounts/ACCOUNT_ID \
   -H "Authorization: Bearer sk_your_key"
 ```
 
-Each account exposes its `platform`, `username`, `status`, and the `profileId`
-it belongs to — never its access token.
+Disconnecting drops the token but keeps the account (and its history) in the
+list, so it can be reconnected with `GET /connect/{platform}?accountId=…`. To
+remove a disconnected account for good — along with its publication history and
+conversations — call `DELETE /accounts/{id}/permanent`.
 
 <Note>
   Requesting a resource that belongs to another account returns `404`, not

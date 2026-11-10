@@ -4,7 +4,7 @@ description: "Publish one post to several platforms, now or later."
 ---
 
 Create a post targeting one or more accounts; PlugKit publishes to each and
-returns a per-target result.
+tracks a result per target.
 
 ```bash
 curl -X POST https://api.plugkit.co/v1/posts \
@@ -38,9 +38,47 @@ curl -X POST https://api.plugkit.co/v1/posts \
 | `trialReel`, `trialGraduation`, `shareToFeed` | — | Instagram reels. |
 | `asStory` | — | Instagram: publish to the story instead of the feed. See [Stories](#instagram-stories). |
 | `allowComment`, `allowDuet`, `allowStitch` | — | TikTok interaction settings. |
+| `isDraft` | — | Save as a PlugKit draft, never published automatically. Wins over `publishNow` and `scheduledFor`. |
 
-The response carries a `target` per account with its `status` and, once live,
-the `platformPostUrl`.
+Unknown fields are rejected with a `400 validation_failed` — see
+[API conventions](/concepts/api-conventions). More per-platform options are
+listed under [Platform options](#platform-options).
+
+## The response
+
+```json
+{
+  "message": "Post publishing",
+  "post": {
+    "_id": "cm…",
+    "profileId": "…",
+    "content": "Launch day 🚀",
+    "status": "publishing",
+    "platforms": [
+      {
+        "platform": "instagram",
+        "accountId": "…",
+        "status": "pending",
+        "platformPostId": null,
+        "platformPostUrl": null,
+        "publishedAt": null,
+        "canUnpublish": false
+      }
+    ]
+  }
+}
+```
+
+With `publishNow: true` the call returns **immediately** with
+`status: "publishing"`; publishing runs in the background. Follow it with
+`GET /posts/{id}` or the `post.*` [webhooks](/guides/webhooks).
+
+- **Post `status`**: `draft`, `scheduled`, `publishing`, `published`, `partial`, `failed`.
+- **Target `status`** (one per entry of `platforms[]`): `pending`, `published`, `failed`, `deleted`.
+  A failed target carries `errorMessage`, `errorCategory` and `errorSource`.
+
+`POST /posts` accepts an `Idempotency-Key` header, so a network retry never
+creates the post twice.
 
 ## Media
 
@@ -65,18 +103,23 @@ custom video thumbnail, none of which a bare URL can express:
 
 Files you upload stay in the account's media library, whichever way they got in
 — the dashboard composer, an upload link, an import from a URL, or the API. List
-them with `GET /media`, and pass their ids to a post as `mediaIds` instead of
-copying URLs around:
+them with `GET /media` (paginated, filter with `type` and `search`), and put
+their `url` in a post's `mediaItems`:
 
 ```bash
 curl https://api.plugkit.co/v1/media -H "Authorization: Bearer sk_your_key"
 # → { "media": [ { "id": "…", "filename": "reel-4.mp4", "type": "video",
-#                  "sizeBytes": 48210022, "url": "https://api.plugkit.co/v1/media/file/…" } ] }
+#                  "sizeBytes": 48210022, "url": "https://api.plugkit.co/v1/media/file/…" } ],
+#     "pagination": { … } }
 ```
 
-An assistant does the same through `list_media`, which is what lets someone say
-"publish the reel I just uploaded" without pasting anything. `DELETE /media/:id`
-removes a file for good; it is refused while a post that has not been published
+<Note>
+  The REST API takes media by URL (`mediaItems` / `mediaUrls`). Passing library
+  ids as `mediaIds` only works through the [MCP server](/mcp/overview); on
+  `POST /posts` it is rejected as an unknown field.
+</Note>
+
+`DELETE /media/:id` removes a file for good; it is refused while a post that has not been published
 yet still uses it.
 
 ### Uploading a file
@@ -100,7 +143,9 @@ storage rather than by request memory:
 curl -X POST https://api.plugkit.co/v1/media/upload-url \
   -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
   -d '{ "filename": "episode-12.mp4" }'
-# → { "uploadUrl": "https://…", "uploadMethod": "PUT", "mediaUrl": "https://…", "expiresAt": "…", "maxBytes": … }
+# → { "mediaId": "…", "uploadUrl": "https://…", "uploadMethod": "PUT",
+#     "mediaUrl": "https://…", "uploadPageUrl": "https://…", "expiresAt": "…",
+#     "maxBytes": …, "singlePutMaxBytes": …, "multipartUrl": "https://…" }
 
 # 2. send the bytes with the method the ticket names
 curl -X PUT --upload-file ./episode-12.mp4 "PASTE_uploadUrl"
@@ -109,7 +154,15 @@ curl -X PUT --upload-file ./episode-12.mp4 "PASTE_uploadUrl"
 ```
 
 Use `mediaUrl` (not `uploadUrl`) in `mediaItems`. The ticket is single-use and
-expires.
+expires. `mediaId` is the file's entry in the media library.
+
+<Warning>
+  A single `PUT` is capped at `singlePutMaxBytes`, which is lower than the
+  ticket's `maxBytes`. Above it, a one-shot upload fails at the last byte: send
+  the file in parts through `multipartUrl` (`POST /media/uploads/{token}/parts`,
+  then `/parts/complete`), or hand `uploadPageUrl` to a person, whose browser
+  splits the upload for you.
+</Warning>
 
 **No terminal? Hand the ticket to a person.** The same address opened in a
 browser (`uploadPageUrl`, returned alongside `uploadUrl`) is a page where they
@@ -150,6 +203,7 @@ given:
 | **Telegram** | optional | The bot must be an admin of the channel. |
 | **LinkedIn** | optional | Text only, **or** 1–20 images, **or** one video. Posts to the member's profile. |
 | **Threads** | optional | Text only (500 chars), **or** one image/video, **or** a carousel of 2–20. |
+| **Bluesky** | optional | 300 characters max (refused, never truncated), **or** 1–4 images, **or** one video. |
 
 WhatsApp doesn't do posts — see [Messaging](/guides/messaging).
 
@@ -204,6 +258,29 @@ A story is not a short post, and Instagram is strict about it:
 Stories count towards the same Instagram quota as feed posts (100 API
 publications per rolling 24 hours).
 
+## Platform options
+
+All optional; each is ignored by the platforms it doesn't name. The
+[API Reference](/api-reference) has the full schema.
+
+| Field | Platforms | Notes |
+| --- | --- | --- |
+| `firstComment` | Instagram, Facebook, Threads | A comment the account posts on its own post right after publishing. Not on stories. |
+| `collaborators` | Instagram | Up to 3 usernames invited as collaborators. |
+| `userTags` | Instagram | Up to 20 `{ username, x, y }`; `x`/`y` (0–1) only apply to photos. |
+| `locationId` | Instagram | Facebook Page id of a place. See `GET /places`. |
+| `productTags` | Instagram | Shop products; check `GET /shopping/{accountId}/status` first. |
+| `coverTimestampMs` | TikTok, Instagram reels | Frame used as the cover, in ms. |
+| `coverIndex`, `autoAddMusic` | TikTok photo carousels | Cover photo position; add a recommended track. |
+| `tiktokPrivacyLevel` | TikTok | Exact level among those returned by `GET /accounts/{id}/publish-options`. Wins over `privacy`. |
+| `promotionalContent`, `paidPartnership` | TikTok (`paidPartnership` also X) | Commercial content disclosure. |
+| `aiGenerated` | TikTok, YouTube, X, Instagram | Label the media as AI-generated. |
+| `youtubeTags`, `youtubeCategoryId`, `madeForKids`, `notifySubscribers` | YouTube | Video metadata. |
+| `replyControl`, `topicTag`, `linkAttachment` | Threads | Who can reply, topic, link preview card. |
+| `xReplySettings` | X | Who can reply. |
+| `linkedinVisibility` | LinkedIn | `PUBLIC`, `CONNECTIONS` or `LOGGED_IN`. |
+| `poll` | Threads, X, LinkedIn | `{ options: [2–4], durationMinutes, question }` on a post without media. |
+
 ## Scheduling
 
 Pass `scheduledFor` instead of `publishNow`:
@@ -234,6 +311,15 @@ retry that one target, which the `publish` call above does.
 
 Subscribe to `post.published`, `post.partial` and `post.failed` to hear about it
 without polling — see [Webhooks](/guides/webhooks).
+
+## Deleting and unpublishing
+
+- `DELETE /posts/{id}` forgets the post in PlugKit and cancels its schedule. It
+  does **not** remove anything from the platforms.
+- `POST /posts/{id}/unpublish` removes a published post from the platform
+  (optional body `{ "accountId": "…" }` to remove it from one target only).
+  Today only Threads and Bluesky targets support it; each target says so in
+  `canUnpublish` (Instagram and TikTok don't offer deletion through their APIs).
 
 <Card title="See all fields" icon="code" href="/api-reference">
   Open `POST /v1/posts` in the API Reference to try it live.

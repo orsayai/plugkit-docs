@@ -1,0 +1,53 @@
+---
+title: "Threads"
+description: "Publish to Threads, moderate replies and read post analytics."
+icon: "threads"
+---
+
+Threads connects a **Threads profile** through Meta's Threads API. It is a
+separate connection from Instagram: nothing carries over from a connected
+Instagram account.
+
+<CardGroup cols={2}>
+  <Card title="Publish" icon="pen">Text, image, video or carousel.</Card>
+  <Card title="Replies" icon="comment-dots">Read, reply, hide; mentions.</Card>
+  <Card title="Analytics" icon="chart-line">Views, likes, replies, reposts, quotes, shares.</Card>
+</CardGroup>
+
+## Connect
+
+```bash
+curl "https://api.plugkit.co/v1/connect/threads?profileId=YOUR_PROFILE_ID" \
+  -H "Authorization: Bearer sk_your_key"
+```
+
+Open the returned `authUrl`, approve on Threads' screen, and the profile is
+connected after the callback.
+
+## Publish
+
+```bash
+curl -X POST https://api.plugkit.co/v1/posts \
+  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
+  -d '{ "profileId": "PROFILE_ID", "accountIds": ["ACCOUNT_ID"],
+        "content": "Shipping today 🧵", "replyControl": "everyone", "publishNow": true }'
+```
+
+- **500 characters** max — a longer `content` is refused, never truncated.
+- Text only, **or** one image/video, **or** a carousel of 2 to 20 items.
+- Options: `replyControl`, `topicTag`, `linkAttachment` (preview card on a text
+  post), `poll`, `firstComment`. See
+  [Publishing](/guides/publishing#threads) for the details.
+- A published post can be removed with `POST /posts/{id}/unpublish`.
+- Threads allows 250 published posts per 24 hours per profile.
+
+## Replies and mentions
+
+Replies under your posts and posts that mention you show up in the
+[engagement feed](/guides/engagement). You can reply and hide; Threads doesn't
+let you delete someone else's reply.
+
+## Not supported
+
+Threads has no DM API: no inbox, broadcasts, sequences or comment → DM
+automations.

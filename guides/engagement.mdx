@@ -1,6 +1,6 @@
 ---
 title: "Engagement"
-description: "Comments, replies and mentions across Instagram, Facebook Pages and Threads."
+description: "Comments, replies and mentions across Instagram, Facebook Pages, Threads, YouTube and Bluesky."
 ---
 
 Public engagement is what people write **under your posts**, and the posts that
@@ -21,6 +21,13 @@ whatever the platform underneath.
 | **Instagram** | ✅ | ✅ | ✅ | ✅ | — |
 | **Facebook Page** | ✅ | ✅ | ✅ | ✅ | — |
 | **Threads** | ✅ | ✅ | ✅ | — | ✅ |
+| **YouTube** | ✅ | ✅* | ✅* | ✅* | — |
+| **Bluesky** | ✅ | ✅ | — | — | ✅ |
+
+\* Replying to and moderating YouTube comments needs the comments permission
+(`youtube.force-ssl`) granted at connection. A channel connected before it was
+offered must be reconnected; until then those calls are refused with a message
+saying so.
 
 Threads cannot delete someone else's reply — the platform only lets you delete
 your own posts — so `DELETE` returns `unsupported_for_platform` there. Hiding

@@ -1,17 +1,11 @@
 ---
 title: "Telegram"
-description: "Post to channels and receive messages with a Telegram bot."
+description: "Post to a channel or group with a Telegram bot."
 icon: "telegram"
 ---
 
 Telegram is the simplest platform to connect — **no OAuth, no app review**. You
-create a bot, paste its token, and you can **publish to channels** and **receive
-messages**.
-
-<CardGroup cols={2}>
-  <Card title="Publish" icon="paper-plane">Post to a channel/group.</Card>
-  <Card title="Messaging" icon="comments">Receive & reply to chats.</Card>
-</CardGroup>
+create a bot, paste its token, and you can **publish to a channel or group**.
 
 ## Connect
 
@@ -21,15 +15,17 @@ token, and connect it:
 ```bash
 curl -X POST https://api.plugkit.co/v1/connect/telegram \
   -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" \
-  -d '{ "profileId": "YOUR_PROFILE_ID", "botToken": "123456:AA..." }'
+  -d '{ "profileId": "YOUR_PROFILE_ID", "botToken": "123456:AA...", "channel": "@my_channel" }'
 ```
 
-PlugKit validates the token (`getMe`) and stores the bot. No consent screen, no
-review.
+`channel` is the `@username` or numeric id of the channel or group the bot
+publishes to. **Without it the bot can't publish.** PlugKit validates the token
+(`getMe`) and stores the bot. No consent screen, no review.
 
 ## Publish to a channel
 
-Add your bot as an **admin** of the target channel/group, then publish. Media is
+Add your bot as an **admin** of the channel/group you passed as `channel`, then
+publish. Media is
 passed as a URL:
 
 ```bash
@@ -46,15 +42,12 @@ curl -X POST https://api.plugkit.co/v1/posts \
 
 ## Messaging
 
-Users who message your bot show up as **conversations**. Read and reply like any
-platform:
-
-```bash
-curl "https://api.plugkit.co/v1/inbox/conversations?accountId=ACCOUNT_ID" -H "Authorization: Bearer sk_your_key"
-curl -X POST https://api.plugkit.co/v1/inbox/conversations/CONVERSATION_ID/messages \
-  -H "Authorization: Bearer sk_your_key" -H "Content-Type: application/json" -d '{ "text": "Hi! 👋" }'
-```
+<Warning>
+  Inbound Telegram messages are **not** ingested yet: chats with your bot don't
+  appear in the Inbox, and there is no `message.received` webhook for Telegram.
+  Use Telegram for channel publishing only for now.
+</Warning>
 
 ## Not supported
 
-Telegram has no comments or analytics surface here.
+Telegram has no inbox, comments or analytics surface here.

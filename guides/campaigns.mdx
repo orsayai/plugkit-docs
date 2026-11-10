@@ -49,8 +49,25 @@ curl -X POST https://api.plugkit.co/v1/comment-automations \
 | `mediaIds` | Posts to watch. **Empty means every post on the account, including ones published later.** |
 | `keywords` | Case- and accent-insensitive. Required unless `matchType` is `any`. |
 | `matchType` | `contains`, `exact`, or `any` (every comment triggers). |
-| `publicReplyText` | Optional public reply under the comment, so others see it worked. |
+| `publicReplies` | Optional public replies under the comment, used in turn so the account doesn't post the same sentence everywhere. Wins over `publicReplyText`. |
+| `publicReplyText` | A single public reply (same as `publicReplies` with one entry). |
 | `oncePerUser` | At most one DM per person for this automation. |
+| `followGate` | Instagram only. Send the link only to followers — see below. `null` removes the gate. |
+
+### Follow gate (Instagram)
+
+With `followGate`, the first DM asks the person to tap a button; PlugKit then
+checks whether they follow the account and sends `dmText`, or asks them to
+follow first:
+
+```json
+"followGate": {
+  "introText": "Tap below and I'll send it 👇",
+  "introButtonLabel": "Send it",
+  "notFollowingText": "Follow the account first, then tap again.",
+  "retryButtonLabel": "I followed"
+}
+```
 
 <Warning>
   Meta allows **one private reply per comment, within 7 days**. It's the only
@@ -86,6 +103,9 @@ curl -X POST https://api.plugkit.co/v1/broadcasts \
 ```
 
 Then `POST /v1/broadcasts/{id}/send` to queue it, or let the schedule fire.
+Pass `"sendNow": true` on creation to start right away instead. To target
+specific people, set `audience.conversationIds` — explicit ids win over every
+other filter.
 `POST /v1/broadcasts/{id}/cancel` puts a scheduled broadcast back to draft.
 
 ### The 24-hour window governs everything
@@ -102,7 +122,7 @@ curl https://api.plugkit.co/v1/broadcasts/BROADCAST_ID/recipients \
   -H "Authorization: Bearer sk_your_key"
 ```
 
-Telegram has no such window. WhatsApp has approved templates for it — see
+WhatsApp has approved templates for it — see
 [WhatsApp](/platforms/whatsapp).
 
 ### The audience is frozen at send time
@@ -112,7 +132,7 @@ conversation that arrives mid-send isn't silently added, and a retry after a
 partial failure doesn't message the people who already got it twice.
 
 <Note>
-  Broadcasts run on Instagram, Facebook, WhatsApp and Telegram. **X is
+  Broadcasts run on Instagram, Facebook and WhatsApp. **X is
   deliberately excluded**: its DMs are billed per call, and a 500-recipient
   broadcast would build an invoice nobody approved.
 </Note>
@@ -148,9 +168,13 @@ curl -X POST https://api.plugkit.co/v1/sequences \
 | Trigger | Who enters |
 | --- | --- |
 | `conversation_started` | Anyone who opens a new conversation with the account. |
-| `comment_automation` | People a comment → DM automation just messaged (pass `automationId`). |
-| `story_reply` | People who reply to one of the account's stories — filtered by `keywords`. |
+| `comment_automation` | People a comment → DM automation just messaged. Pass `automationId`, `automationIds` (several automations), or `allAutomations: true` (every automation of the account, including future ones). |
+| `story_reply` | People who reply to one of the account's stories — filtered by `keywords` (empty = every reply). |
+| `dm_keyword` | People who send a DM containing one of `keywords` (required) — for those who DM the word instead of commenting it. |
 | `manual` | Only who you enrol with `POST /v1/sequences/{id}/enroll`. |
+
+`oncePerContact: true` lets a contact enter the sequence once, ever — never
+re-enrolled by a new story reply, keyword DM or manual enrolment.
 
 `stopOnReply: true` drops someone out the moment they answer. Leave it on unless
 you have a reason: a human reply that keeps getting followed up by a robot is
@@ -176,8 +200,7 @@ step**. Label and URL go together — one without the other is a `400`.
 | `POST /v1/broadcasts` | `buttonLabel`, `buttonUrl` |
 | `POST /v1/sequences` → each entry of `steps` | `buttonLabel`, `buttonUrl` |
 
-Instagram and Facebook render it as a button template, WhatsApp as a CTA,
-Telegram as an inline keyboard. Where the platform refuses it, the URL is
+Instagram and Facebook render it as a button template, WhatsApp as a CTA. Where the platform refuses it, the URL is
 appended to the text rather than lost.
 
 <Warning>
